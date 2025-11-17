@@ -1,0 +1,138 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Firebase/logout": {
+      "post": {
+        "tags": [
+          "Firebase"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Firebase/updateScore": {
+      "post": {
+        "tags": [
+          "Firebase"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScoreRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScoreRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Firebase/rankingBoard": {
+      "post": {
+        "tags": [
+          "Firebase"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateScoreRequest": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "string",
+            "nullable": true
+          },
+          "localId": {
+            "type": "string",
+            "nullable": true
+          },
+          "idToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersRequest": {
+        "type": "object",
+        "properties": {
+          "localId": {
+            "type": "string",
+            "nullable": true
+          },
+          "idToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

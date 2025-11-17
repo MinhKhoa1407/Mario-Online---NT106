@@ -1,0 +1,217 @@
+﻿  AboutMenu.cpp
+  Beetle.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'AboutMenu.cpp')
+  
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Beetle.cpp')
+  
+  Block.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Block.cpp')
+  
+  BlockDebris.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'BlockDebris.cpp')
+  
+  Bowser.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Bowser.cpp')
+  
+  Bubble.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Bubble.cpp')
+  
+  BulletBill.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'BulletBill.cpp')
+  
+  BulletBillSpawner.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'BulletBillSpawner.cpp')
+  
+  CFG.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'CFG.cpp')
+  
+  Cheep.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Cheep.cpp')
+  
+  CheepSpawner.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'CheepSpawner.cpp')
+  
+  Coin.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Coin.cpp')
+  
+  Console.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Console.cpp')
+  
+  Core.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Core.cpp')
+  
+  Fire.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Fire.cpp')
+  
+  FireBall.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'FireBall.cpp')
+  
+  Flag.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Flag.cpp')
+  
+  Flower.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Flower.cpp')
+  
+  Goombas.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Goombas.cpp')
+  
+  Hammer.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Hammer.cpp')
+  
+  Generating Code...
+  Compiling...
+  HammerBro.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'HammerBro.cpp')
+  
+  IMG.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'IMG.cpp')
+  
+  Koppa.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Koppa.cpp')
+  
+  Event.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Event.cpp')
+  
+  Lakito.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Lakito.cpp')
+  
+  LevelEditor.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'LevelEditor.cpp')
+  
+  LevelText.cpp
+  LoadingMenu.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'LoadingMenu.cpp')
+  
+  main.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'main.cpp')
+  
+  MainMenu.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'MainMenu.cpp')
+  
+  Map.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Map.cpp')
+  
+  MapLevel.cpp
+  Menu.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Menu.cpp')
+  
+  MenuManager.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'MenuManager.cpp')
+  
+  MenuOption.cpp
+  Minion.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Minion.cpp')
+  
+  Mushroom.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Mushroom.cpp')
+  
+  Music.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Music.h(6,10): error C1083: Cannot open include file: 'SDL_mixer.h': No such file or directory
+  (compiling source file 'Music.cpp')
+  
+  OptionsMenu.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'OptionsMenu.cpp')
+  
+  PauseMenu.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'PauseMenu.cpp')
+  
+  Generating Code...
+  Compiling...
+  Pipe.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Pipe.cpp')
+  
+  Plant.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Plant.cpp')
+  
+  Platform.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Platform.cpp')
+  
+  Player.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Player.cpp')
+  
+  PlayerFireBall.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'PlayerFireBall.cpp')
+  
+  Points.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Points.cpp')
+  
+  Spikey.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Spikey.cpp')
+  
+  Spring.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Spring.cpp')
+  
+  Sprite.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Sprite.cpp')
+  
+  Squid.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Squid.cpp')
+  
+  Star.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Star.cpp')
+  
+  Text.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Text.cpp')
+  
+  Toad.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Toad.cpp')
+  
+  UpFire.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'UpFire.cpp')
+  
+  Vector2.cpp
+  Vine.cpp
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\header.h(6,10): error C1083: Cannot open include file: 'SDL.h': No such file or directory
+  (compiling source file 'Vine.cpp')
+  
+  Generating Code...
