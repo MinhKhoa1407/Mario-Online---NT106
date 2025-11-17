@@ -1,0 +1,14 @@
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Ranking.exe.config
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Ranking.exe
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Ranking.pdb
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.AssemblyReference.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.Form1.resources
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.Properties.Resources.resources
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.GenerateResource.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.CoreCompileInputs.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.exe
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.pdb
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.exe.config
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Newtonsoft.Json.dll
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Newtonsoft.Json.xml
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.Up2Date

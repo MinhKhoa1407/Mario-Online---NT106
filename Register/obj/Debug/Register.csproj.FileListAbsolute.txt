@@ -1,0 +1,14 @@
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\bin\Debug\Register.exe.config
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\bin\Debug\Register.exe
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\bin\Debug\Register.pdb
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\bin\Debug\Newtonsoft.Json.dll
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\bin\Debug\Newtonsoft.Json.xml
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.csproj.AssemblyReference.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.Form1.resources
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.Properties.Resources.resources
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.csproj.GenerateResource.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.csproj.CoreCompileInputs.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.csproj.Up2Date
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.exe
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.pdb
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Register\obj\Debug\Register.exe.config

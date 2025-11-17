@@ -1,0 +1,15 @@
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\bin\Debug\Login.exe.config
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\bin\Debug\Login.exe
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\bin\Debug\Login.pdb
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\bin\Debug\Newtonsoft.Json.dll
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\bin\Debug\Newtonsoft.Json.xml
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.csproj.AssemblyReference.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.Form1.resources
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.Properties.Resources.resources
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.csproj.GenerateResource.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.csproj.CoreCompileInputs.cache
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.csproj.Up2Date
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.exe
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.pdb
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.exe.config
+E:\uMario_Jakowski-master\uMario_Jakowski-master\Login\obj\Debug\Login.ForgetPassword.resources

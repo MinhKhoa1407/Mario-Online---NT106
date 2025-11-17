@@ -1,0 +1,62 @@
+[
+  {
+    "ContainingType": "API.Controllers.FirebaseController",
+    "Method": "Logout",
+    "RelativePath": "api/Firebase/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "API.Controllers.FirebaseController\u002BUsersRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "API.Controllers.FirebaseController",
+    "Method": "rankingBoard",
+    "RelativePath": "api/Firebase/rankingBoard",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "API.Controllers.FirebaseController\u002BUsersRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "API.Controllers.FirebaseController",
+    "Method": "UpdateScore",
+    "RelativePath": "api/Firebase/updateScore",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "UCrequest",
+        "Type": "API.Controllers.FirebaseController\u002BUpdateScoreRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  }
+]
