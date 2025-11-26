@@ -9,9 +9,9 @@
 /* ******************************************** */
 
 AboutMenu::AboutMenu(void) {
-	this->lMO.push_back(new MenuOption("RANKING", 150, 220));  
-	this->lMO.push_back(new MenuOption("LOG OUT", 150, 260));  
-	this->lMO.push_back(new MenuOption("MAIN MENU", 150, 340)); 
+	this->lMO.push_back(new MenuOption("RANKING", 150, 220));
+	this->lMO.push_back(new MenuOption("LOG OUT", 150, 260));
+	this->lMO.push_back(new MenuOption("MAIN MENU", 150, 340));
 
 	this->numOfMenuOptions = lMO.size();
 
@@ -39,7 +39,7 @@ AboutMenu::~AboutMenu(void) {
 /* ******************************************** */
 
 void AboutMenu::Update() {
-	if(SDL_GetTicks() >= iTime + 35) {
+	if (SDL_GetTicks() >= iTime + 35) {
 		this->cR = getColorStep(cR, nR);
 		this->cG = getColorStep(cG, nG);
 		this->cB = getColorStep(cB, nB);
@@ -47,34 +47,40 @@ void AboutMenu::Update() {
 		if (colorStepID >= 15 || (cR == nR && cG == nG && cB == nB)) {
 			nextColor();
 			colorStepID = 1;
-		} else {
+		}
+		else {
 			++colorStepID;
 		}
 
-		CCore::getMap()->setLevelType(rand()%4);
-		
-		if(rand()%10 < 6) {
-			CCore::getMap()->addGoombas(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, rand()%2 == 0);
-			CCore::getMap()->addGoombas(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, rand()%2 == 0);
-		} else if(rand()%10 < 8) {
-			CCore::getMap()->addKoppa(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, 0, rand()%2 == 0);
-			CCore::getMap()->addKoppa(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, 0, rand()%2 == 0);
-		} else if(rand()%6 < 4) {
-			CCore::getMap()->addFire(-CCore::getMap()->getXPos() + CCFG::GAME_WIDTH + 128, CCFG::GAME_HEIGHT - 16.0f - rand()%16*32, CCFG::GAME_HEIGHT - 16 - rand()%16*32);
-		} else if(rand()%6 < 4) {
-			CCore::getMap()->addBulletBill((int)(-CCore::getMap()->getXPos() + CCFG::GAME_WIDTH + 128), CCFG::GAME_HEIGHT - 16 - rand()%16*32, true, 1);
-		} else {
-			CCore::getMap()->addFireBall(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128) + 8, CCFG::GAME_HEIGHT - 16 - rand()%16 * 32, rand()%8 + 4 + 8, rand()%360, rand()%2 == 0);
+		CCore::getMap()->setLevelType(rand() % 4);
+
+		if (rand() % 10 < 6) {
+			CCore::getMap()->addGoombas(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, rand() % 2 == 0);
+			CCore::getMap()->addGoombas(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, rand() % 2 == 0);
+		}
+		else if (rand() % 10 < 8) {
+			CCore::getMap()->addKoppa(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, 0, rand() % 2 == 0);
+			CCore::getMap()->addKoppa(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128), -32, 0, rand() % 2 == 0);
+		}
+		else if (rand() % 6 < 4) {
+			CCore::getMap()->addFire(-CCore::getMap()->getXPos() + CCFG::GAME_WIDTH + 128, CCFG::GAME_HEIGHT - 16.0f - rand() % 16 * 32, CCFG::GAME_HEIGHT - 16 - rand() % 16 * 32);
+		}
+		else if (rand() % 6 < 4) {
+			CCore::getMap()->addBulletBill((int)(-CCore::getMap()->getXPos() + CCFG::GAME_WIDTH + 128), CCFG::GAME_HEIGHT - 16 - rand() % 16 * 32, true, 1);
+		}
+		else {
+			CCore::getMap()->addFireBall(-(int)CCore::getMap()->getXPos() + rand() % (CCFG::GAME_WIDTH + 128) + 8, CCFG::GAME_HEIGHT - 16 - rand() % 16 * 32, rand() % 8 + 4 + 8, rand() % 360, rand() % 2 == 0);
 		}
 
 		iNumOfUnits += 2;
 
 		iTime = SDL_GetTicks();
 	}
-	
-	if(moveDirection && CCFG::GAME_WIDTH - CCore::getMap()->getXPos() >= (CCore::getMap()->getMapWidth() - 20) * 32) {
+
+	if (moveDirection && CCFG::GAME_WIDTH - CCore::getMap()->getXPos() >= (CCore::getMap()->getMapWidth() - 20) * 32) {
 		moveDirection = !moveDirection;
-	} else if(!moveDirection && -CCore::getMap()->getXPos() <= 0) {
+	}
+	else if (!moveDirection && -CCore::getMap()->getXPos() <= 0) {
 		moveDirection = !moveDirection;
 	}
 
@@ -168,9 +174,9 @@ void RankingForm() {
 	STARTUPINFOA si = { sizeof(si) };
 	PROCESS_INFORMATION pi;
 
-	if(CreateProcessA(
-		rankingExe.c_str(),        
-		cmdLineBuffer.data(),      
+	if (CreateProcessA(
+		rankingExe.c_str(),
+		cmdLineBuffer.data(),
 		NULL, NULL, FALSE,
 		0,
 		NULL, NULL,
@@ -186,30 +192,40 @@ void RankingForm() {
 
 void AboutMenu::enter() {
 	switch (activeMenuOption) {
-		case 0:
-			RankingForm();
-			break;
-		case 1: {
-			std::string localId = CCFG::getLocalId();
-			std::string idToken = CCFG::getIdToken();
-			if (localId == "" || idToken == "") {
-				CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
-				break;
-			}
-			CallLogoutAPI(localId, idToken);
+	case 0:
+		RankingForm();
+		break;
+	case 1: {
+		// Kiểm tra: Nếu đang là chủ phòng thì xóa phòng trước khi đăng xuất
+		if (APIManager::isRoomOwner && APIManager::currentRoomID != "") {
+			std::cout << "[AUTO] Dang xoa phong truoc khi Dang xuat..." << std::endl;
+			api.DeleteRoom(APIManager::currentRoomID); // Gọi lệnh xóa trên Firebase
 
-			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eLoginMenu);
-			CCFG::getMM()->setViewID(CCFG::getMM()->eLoginMenu);
-			reset();
-			CCFG::getMusic()->StopMusic();
+			// Reset trạng thái
+			APIManager::isRoomOwner = false;
+			APIManager::currentRoomID = "";
+		}
+
+		std::string localId = CCFG::getLocalId();
+		std::string idToken = CCFG::getIdToken();
+		if (localId == "" || idToken == "") {
+			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
 			break;
 		}
-		case 2:
-			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
-			CCFG::getMM()->setViewID(CCFG::getMM()->eMainMenu);
-			reset();
-			CCFG::getMusic()->StopMusic();
-			break;
+		CallLogoutAPI(localId, idToken);
+
+		CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eLoginMenu);
+		CCFG::getMM()->setViewID(CCFG::getMM()->eLoginMenu);
+		reset();
+		CCFG::getMusic()->StopMusic();
+		break;
+	}
+	case 2:
+		CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
+		CCFG::getMM()->setViewID(CCFG::getMM()->eMainMenu);
+		reset();
+		CCFG::getMusic()->StopMusic();
+		break;
 	}
 }
 
@@ -231,93 +247,93 @@ void AboutMenu::reset() {
 void AboutMenu::nextColor() {
 	int iN = iColorID;
 
-	while(iN == iColorID) {
+	while (iN == iColorID) {
 		iColorID = rand() % 16;
 	}
 
 	++iColorID;
 
 	switch (iColorID) {
-		case 0:
-			nR = 73;
-			nG = 133;
-			nB = 203;
-			break;
-		case 1:
-			nR = 197;
-			nG = 197;
-			nB = 223;
-			break;
-		case 2:
-			nR = 27;
-			nG = 60;
-			nB = 173;
-			break;
-		case 3:
-			nR = 6;
-			nG = 21;
-			nB = 86;
-			break;
-		case 4:
-			nR = 183;
-			nG = 85;
-			nB = 76;
-			break;
-		case 5:
-			nR = 110;
-			nG = 58;
-			nB = 70;
-			break;
-		case 6:
-			nR = 55;
-			nG = 19;
-			nB = 63;
-			break;
-		case 7:
-			nR = 115;
-			nG = 53;
-			nB = 126;
-			break;
-		case 8:
-			nR = 227;
-			nG = 200;
-			nB = 0;
-			break;
-		case 9:
-			nR = 255;
-			nG = 180;
-			nB = 2;
-			break;
-		case 10:
-			nR = 231;
-			nG = 51;
-			nB = 24;
-			break;
-		case 11:
-			nR = 255;
-			nG = 180;
-			nB = 2;
-			break;
-		case 12:
-			nR = 4;
-			nG = 2;
-			nB = 15;
-			break;
-		case 13:
-			nR = 135;
-			nG = 178;
-			nB = 168;
-			break;
-		case 14:
-			nR = 64;
-			nG = 43;
-			nB = 24;
-			break;
-		case 15:
-			nR = rand() % 255;
-			nG = rand() % 255;
-			nB = rand() % 255;
-			break;
+	case 0:
+		nR = 73;
+		nG = 133;
+		nB = 203;
+		break;
+	case 1:
+		nR = 197;
+		nG = 197;
+		nB = 223;
+		break;
+	case 2:
+		nR = 27;
+		nG = 60;
+		nB = 173;
+		break;
+	case 3:
+		nR = 6;
+		nG = 21;
+		nB = 86;
+		break;
+	case 4:
+		nR = 183;
+		nG = 85;
+		nB = 76;
+		break;
+	case 5:
+		nR = 110;
+		nG = 58;
+		nB = 70;
+		break;
+	case 6:
+		nR = 55;
+		nG = 19;
+		nB = 63;
+		break;
+	case 7:
+		nR = 115;
+		nG = 53;
+		nB = 126;
+		break;
+	case 8:
+		nR = 227;
+		nG = 200;
+		nB = 0;
+		break;
+	case 9:
+		nR = 255;
+		nG = 180;
+		nB = 2;
+		break;
+	case 10:
+		nR = 231;
+		nG = 51;
+		nB = 24;
+		break;
+	case 11:
+		nR = 255;
+		nG = 180;
+		nB = 2;
+		break;
+	case 12:
+		nR = 4;
+		nG = 2;
+		nB = 15;
+		break;
+	case 13:
+		nR = 135;
+		nG = 178;
+		nB = 168;
+		break;
+	case 14:
+		nR = 64;
+		nG = 43;
+		nB = 24;
+		break;
+	case 15:
+		nR = rand() % 255;
+		nG = rand() % 255;
+		nB = rand() % 255;
+		break;
 	}
 }
 
