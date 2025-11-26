@@ -1,6 +1,12 @@
-#include "MainMenu.h"
+﻿#include "MainMenu.h"
 #include "CFG.h"
 #include "Core.h"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <Windows.h> 
+
 
 /* ******************************************** */
 
@@ -9,6 +15,8 @@ MainMenu::MainMenu(void) {
 	this->lMO.push_back(new MenuOption("2 PLAYER GAME", 178, 308));
 	this->lMO.push_back(new MenuOption("OPTIONS", 222, 340));
 	this->lMO.push_back(new MenuOption("ABOUT", 237, 372));
+
+	
 
 	this->numOfMenuOptions = lMO.size();
 
@@ -98,21 +106,12 @@ void MainMenu::enter() {
 				selectWorld = false;
 			}
 			break;
-		case 1:
-			if (!selectWorld) {
-				selectWorld = true;
-			}
-			else {
-				CCFG::getMM()->getLoadingMenu()->updateTime();
-				CCore::getMap()->resetGameData();
-				CCore::getMap()->setCurrentLevelID(activeWorldID * 4 + activeSecondWorldID);
-				CCFG::getMM()->setViewID(CCFG::getMM()->eGameLoading);
-				CCFG::getMM()->getLoadingMenu()->loadingType = true;
-				CCore::getMap()->setSpawnPointID(0);
-				selectWorld = false;
-				//CCore::getMap()->setMultiplayerMode(true);
-			}
+		case 1: // 2 PLAYER GAME
+		{
+			// Chuyển hướng sang Menu Multiplayer mới mà bạn vừa tạo
+			CCFG::getMM()->setViewID(CCFG::getMM()->eMultiplayerMenu);
 			break;
+		}
 		case 2:
 			CCFG::getMM()->getOptions()->setEscapeToMainMenu(true);
 			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eOptions);
@@ -124,6 +123,7 @@ void MainMenu::enter() {
 			CCFG::getMM()->setViewID(CCFG::getMM()->eAbout);
 			CCFG::getMusic()->PlayMusic(CCFG::getMusic()->mOVERWORLD);
 			break;
+		
 	}
 }
 

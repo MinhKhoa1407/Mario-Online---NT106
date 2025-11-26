@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef ABOUTMENU_H
 #define ABOUTMENU_H
@@ -6,13 +6,13 @@
 #include "Menu.h"
 #include <iostream>
 #include <string>
-#include <curl/curl.h>
-
+#include <curl.h>
+#include "APIManager.h"
 class AboutMenu : public Menu
 {
 private:
 	unsigned int iTime;
-
+	APIManager api;
 	int cR, cG, cB, nR, nG, nB;
 	int colorStepID, iColorID;
 
@@ -28,7 +28,7 @@ public:
 	void Draw(SDL_Renderer* rR);
 
 	void enter();
-
+	void escape();
 	void launch();
 	void reset();
 
