@@ -45,7 +45,9 @@ void LoginMenu::Draw(SDL_Renderer* rR) {
     }
 }
 
-std::string runLoginFormAndReadResult(std::string& id, std::string& token) {
+std::string runLoginFormAndReadResult(std::string& id, std::string& token, std::string& name) {
+    remove("login_info.txt");
+    
     char exePath[MAX_PATH];
     GetModuleFileNameA(NULL, exePath, MAX_PATH);
     std::string status;
@@ -60,15 +62,43 @@ std::string runLoginFormAndReadResult(std::string& id, std::string& token) {
 
     std::string loginExe = projectRoot + "\\Login\\bin\\Debug\\Login.exe";
 
-    FILE* pipe = _popen(("\"" + loginExe + "\"").c_str(), "r");
-    if (!pipe) return "";
+    std::string cmdLine = "\"" + loginExe + "\"";
+    std::vector<char> cmdLineBuffer(cmdLine.begin(), cmdLine.end());
+    cmdLineBuffer.push_back('\0');
+
+    STARTUPINFOA si = { sizeof(si) };
+    PROCESS_INFORMATION pi;
+
+    if (CreateProcessA(
+        loginExe.c_str(),
+        cmdLineBuffer.data(),
+        NULL, NULL, FALSE,
+        0,
+        NULL, NULL,
+        &si, &pi
+    ))
+    {
+        WaitForSingleObject(pi.hProcess, INFINITE);
+
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+    /*if (!pipe) return "";
 
     char buffer[2000];
     std::string result;
     while (fgets(buffer, sizeof(buffer), pipe))
         result += buffer;
 
-    _pclose(pipe);
+    _pclose(pipe);*/
+
+    std::ifstream file("login_info.txt");
+    if (!file.is_open()) return "";
+
+    std::string result;
+    std::getline(file, result);
+
+    file.close();
 
     if (!result.empty() && (result.back() == '\n' || result.back() == '\r'))
         result.pop_back();
@@ -83,10 +113,11 @@ std::string runLoginFormAndReadResult(std::string& id, std::string& token) {
     }
     parts.push_back(result.substr(start));
 
-    if (parts.size() == 3) {
+    if (parts.size() == 4) {
         status = parts[0];
         id = parts[1];
         token = parts[2];
+        name = parts[3];
     }
 
     /*if (id == "" || token == "") {
@@ -110,15 +141,42 @@ std::string runRegisterFormAndReadResult() {
 
     std::string registerExe = projectRoot + "\\Register\\bin\\Debug\\Register.exe";
 
-    FILE* pipe = _popen(("\"" + registerExe + "\"").c_str(), "r");
-    if (!pipe) return "";
+    std::string cmdLine = "\"" + registerExe + "\"";
+    std::vector<char> cmdLineBuffer(cmdLine.begin(), cmdLine.end());
+    cmdLineBuffer.push_back('\0');
 
-    char buffer[128];
+    STARTUPINFOA si = { sizeof(si) };
+    PROCESS_INFORMATION pi;
+
+    if (CreateProcessA(
+        registerExe.c_str(),
+        cmdLineBuffer.data(),
+        NULL, NULL, FALSE,
+        0,
+        NULL, NULL,
+        &si, &pi
+    ))
+    {
+        WaitForSingleObject(pi.hProcess, INFINITE);
+
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+
+    /*char buffer[128];
     std::string result;
     while (fgets(buffer, sizeof(buffer), pipe))
         result += buffer;
 
-    _pclose(pipe);
+    _pclose(pipe);*/
+
+    std::ifstream file("register_info.txt");
+    if (!file.is_open()) return "";
+
+    std::string result;
+    std::getline(file, result);
+
+    file.close();
 
     if (!result.empty() && (result.back() == '\n' || result.back() == '\r'))
         result.pop_back();
@@ -130,14 +188,16 @@ void LoginMenu::enter() {
     if (!inLoginForm && !inRegisterForm) {
         switch (activeMenuOption) {
         case 0: {
-            std::string id, token;
+            std::string id, token, name;
             inLoginForm = true;
 
-            std::string status = runLoginFormAndReadResult(id, token);
+            std::string status = runLoginFormAndReadResult(id, token, name);
             if (status == "success") {
                 loginFailed = false;
                 CCFG::setLocalId(id);
                 CCFG::setIdToken(token);
+                CCFG::setUserName(name);
+                CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
                 CCFG::getMM()->setViewID(CCFG::getMM()->eMainMenu);
             }
             else {

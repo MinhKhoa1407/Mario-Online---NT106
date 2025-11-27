@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Net.Http;
-using Newtonsoft.Json;
-using System.IO;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Login
 {
@@ -98,9 +99,11 @@ namespace Login
 
                 await SetUsersOnline(idToken, localId);
 
+                string username = await GetUserName(idToken, localId);
+
                 await Task.Delay(1000);
-                
-                Console.Write($"success|{localId}|{idToken}");
+
+                File.WriteAllText("login_info.txt", $"success|{localId}|{idToken}|{username}");
 
                 this.Close();
                 
@@ -108,6 +111,22 @@ namespace Login
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async Task<string> GetUserName(string idToken, string localId)
+        {
+            try
+            {
+                string url = $"{databaseURL}/users/{localId}/username.json?auth={idToken}";
+                var response = await client.GetAsync(url);
+                string result = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<string>(result);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
             }
         }
 

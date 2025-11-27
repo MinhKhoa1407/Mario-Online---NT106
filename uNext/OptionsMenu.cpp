@@ -39,6 +39,7 @@ OptionsMenu::OptionsMenu(void) {
 	rVolume.w = 100;
 
 	this->escapeToMainMenu = true;
+	//this->escapeToWaitingRoom = true;
 }
 
 OptionsMenu::~OptionsMenu(void) {
@@ -148,8 +149,14 @@ void OptionsMenu::escape() {
 		if(escapeToMainMenu) {
 			CCore::getMap()->resetGameData();
 			CCFG::getMM()->setViewID(CCFG::getMM()->eMainMenu);
-		} else {
-			CCFG::getMM()->setViewID(CCFG::getMM()->ePasue);
+		}
+		/*else if (escapeToWaitingRoom) {
+			CCore::getMap()->resetGameData();
+			CCFG::getMM()->setViewID(CCFG::getMM()->eWaitingRoom);
+		}*/
+		else {
+			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->ePause);
+			CCFG::getMM()->setViewID(CCFG::getMM()->ePause);
 		}
 	}
 }
@@ -234,3 +241,7 @@ void OptionsMenu::updateVolumeRect() {
 void OptionsMenu::setEscapeToMainMenu(bool escapeToMainMenu) {
 	this->escapeToMainMenu = escapeToMainMenu;
 }
+
+//void OptionsMenu::setEscapeToWaitingRoom(bool escapeToWaitingRoom) {
+//	this->escapeToWaitingRoom = escapeToWaitingRoom;
+//}

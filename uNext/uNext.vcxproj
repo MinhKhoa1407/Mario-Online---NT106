@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AboutMenu.cpp" />
+    <ClCompile Include="APIManager.cpp" />
     <ClCompile Include="Beetle.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="BlockDebris.cpp" />
@@ -56,6 +57,7 @@
     <ClCompile Include="MenuManager.cpp" />
     <ClCompile Include="MenuOption.cpp" />
     <ClCompile Include="Minion.cpp" />
+    <ClCompile Include="MultiplayerMenu.cpp" />
     <ClCompile Include="Mushroom.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="OptionsMenu.cpp" />
@@ -76,9 +78,11 @@
     <ClCompile Include="UpFire.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="Vine.cpp" />
+    <ClCompile Include="WaitingRoom.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutMenu.h" />
+    <ClInclude Include="APIManager.h" />
     <ClInclude Include="Beetle.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="BlockDebris.h" />
@@ -115,6 +119,7 @@
     <ClInclude Include="MenuManager.h" />
     <ClInclude Include="MenuOption.h" />
     <ClInclude Include="Minion.h" />
+    <ClInclude Include="MultiplayerMenu.h" />
     <ClInclude Include="Mushroom.h" />
     <ClInclude Include="Music.h" />
     <ClInclude Include="OptionsMenu.h" />
@@ -136,6 +141,7 @@
     <ClInclude Include="UpFire.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vine.h" />
+    <ClInclude Include="WaitingRoom.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="uNext.rc" />

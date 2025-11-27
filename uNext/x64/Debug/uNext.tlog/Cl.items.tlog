@@ -1,4 +1,5 @@
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\AboutMenu.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\AboutMenu.obj
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\APIManager.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\APIManager.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Beetle.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Beetle.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Block.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Block.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\BlockDebris.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\BlockDebris.obj
@@ -35,6 +36,7 @@ E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Menu.cpp;E:\uMario_Jakows
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\MenuManager.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\MenuManager.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\MenuOption.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\MenuOption.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Minion.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Minion.obj
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\MultiplayerMenu.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\MultiplayerMenu.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Mushroom.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Mushroom.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Music.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Music.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\OptionsMenu.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\OptionsMenu.obj
@@ -55,3 +57,4 @@ E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Toad.cpp;E:\uMario_Jakows
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\UpFire.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\UpFire.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Vector2.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Vector2.obj
 E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\Vine.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\Vine.obj
+E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\WaitingRoom.cpp;E:\uMario_Jakowski-master\uMario_Jakowski-master\uNext\x64\Debug\WaitingRoom.obj
