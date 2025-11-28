@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <Windows.h>
+#include <fstream>
 
 MultiplayerMenu::MultiplayerMenu(void) {
     // Tạo 2 nút chọn
@@ -33,36 +34,82 @@ void MultiplayerMenu::Draw(SDL_Renderer* rR) {
 }
 
 // Hàm mở Form C# với tham số
-void MultiplayerMenu::OpenLauncher(std::string mode) {
-    // Xóa kết quả cũ
+void MultiplayerMenu::OpenLauncher(std::string mode, std::string username) {
     remove("room_info.txt");
 
-    // Thêm tham số vào dòng lệnh: "RoomLauncher.exe create"
-    std::string cmd = "RoomLauncher.exe " + mode;
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+
+    std::string currentDir = exePath;
+    size_t pos = currentDir.find_last_of("\\/");
+    currentDir = currentDir.substr(0, pos);
+
+    std::string projectRoot = currentDir.substr(0, currentDir.find_last_of("\\/"));
+    projectRoot = projectRoot.substr(0, projectRoot.find_last_of("\\/"));
+
+    std::string launcherExe =
+        projectRoot + "\\RoomLauncher\\bin\\Debug\\net8.0-windows\\RoomLauncher.exe";
+
+    // Command line: RoomLauncher.exe <mode>
+    std::string cmdLine = "\"" + launcherExe + "\" " + mode + " " + username;
+
+    // Convert sang buffer
+    std::vector<char> cmdLineBuffer(cmdLine.begin(), cmdLine.end());
+    cmdLineBuffer.push_back('\0');
 
     STARTUPINFOA si = { sizeof(si) };
     PROCESS_INFORMATION pi;
 
-    if (CreateProcessA(NULL, (LPSTR)cmd.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+    if (CreateProcessA(
+        launcherExe.c_str(),
+        cmdLineBuffer.data(),
+        NULL, NULL, FALSE,
+        0,
+        NULL, NULL,
+        &si, &pi
+    ))
     {
         WaitForSingleObject(pi.hProcess, INFINITE);
+
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
 
-        // Đọc kết quả (Logic giống hệt MainMenu cũ)
-        // ... (Bạn có thể copy đoạn đọc file room_info.txt vào đây để xử lý vào game luôn)
+        // Đọc file room_info.txt nếu cần
+        // ...
     }
 }
 
 void MultiplayerMenu::enter() {
+    std::string username = CCFG::getUserName();
     switch (activeMenuOption) {
-    case 0: // CREATE
-        OpenLauncher("create");
+    case 0: {
+        OpenLauncher("create", username);
+        std::ifstream file("room_info.txt");
+        if (!file.is_open()) break;
+
+        /*std::string result;
+        std::getline(file, result);*/
+
+        file.close();
+        CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eWaitingRoom);
+        CCFG::getMM()->setViewID(CCFG::getMM()->eWaitingRoom);
         break;
-    case 1: // JOIN
-        OpenLauncher("join");
+    }
+    case 1: { // JOIN
+        OpenLauncher("join", username);
+        std::ifstream file("room_info.txt");
+        if (!file.is_open()) break;
+
+        /*std::string result;
+        std::getline(file, result);*/
+
+        file.close();
+        CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eWaitingRoom);
+        CCFG::getMM()->setViewID(CCFG::getMM()->eWaitingRoom);
         break;
+    }
     case 2: // BACK
+        CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
         CCFG::getMM()->setViewID(CCFG::getMM()->eMainMenu);
         break;
     }

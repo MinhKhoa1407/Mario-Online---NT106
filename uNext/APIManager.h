@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <iostream>
-#include <curl.h> 
+#include <curl/curl.h>
 
 class APIManager
 {

@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Mario_Online\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj": {}
+    "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj": {}
   },
   "projects": {
-    "D:\\Mario_Online\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj": {
+    "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Mario_Online\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
+        "projectUniqueName": "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
         "projectName": "RoomLauncher",
-        "projectPath": "D:\\Mario_Online\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
-        "packagesPath": "C:\\Users\\7340\\.nuget\\packages\\",
-        "outputPath": "D:\\Mario_Online\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\obj\\",
+        "projectPath": "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
+        "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
+        "outputPath": "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\7340\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -44,7 +45,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0-windows7.0": {
@@ -74,7 +75,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

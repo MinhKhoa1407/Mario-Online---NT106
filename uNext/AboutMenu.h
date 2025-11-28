@@ -6,8 +6,9 @@
 #include "Menu.h"
 #include <iostream>
 #include <string>
-#include <curl.h>
+#include <curl/curl.h>
 #include "APIManager.h"
+
 class AboutMenu : public Menu
 {
 private:

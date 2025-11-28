@@ -14,11 +14,14 @@ namespace RoomLauncher
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             string mode = "default";
-            if (args.Length > 0)
-            {
-                mode = args[0]; // Lấy lệnh "create" hoặc "join"
-            }
-            Application.Run(new Form1(mode));
+            string username = "unknown";
+
+            if (args.Length >= 1)
+                mode = args[0];        // "create" hoặc "join"
+
+            if (args.Length >= 2)
+                username = args[1];
+            Application.Run(new Form1(mode, username));
 
         }
     }
