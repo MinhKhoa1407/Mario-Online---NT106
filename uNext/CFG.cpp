@@ -32,6 +32,7 @@ int CCFG::keyIDSpace = 0;
 int CCFG::keyIDShift = 0;
 std::string CCFG::localId = "";
 std::string CCFG::idToken = "";
+std::string CCFG::userName = "";
 
 bool CCFG::canMoveBackward = true;
 

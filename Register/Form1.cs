@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace Register
 {
@@ -132,7 +133,7 @@ namespace Register
 
                 textBox4.Text = "Dang ki thanh cong!";
                 await Task.Delay(1000);
-                Console.Write("success");
+                File.WriteAllText("register_info.txt", $"success");
                 this.Close();
             }
             catch (Exception ex)

@@ -18,7 +18,7 @@ public:
     void updateActiveButton(int iDir);
 
     // Hàm gọi Form C# kèm tham số
-    void OpenLauncher(std::string mode);
+    void OpenLauncher(std::string mode, std::string username);
 };
 
 #endif

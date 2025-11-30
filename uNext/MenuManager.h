@@ -12,6 +12,8 @@
 #include "OptionsMenu.h"
 #include "PauseMenu.h"
 #include "LoginMenu.h"
+#include "MultiplayerMenu.h"
+#include "WaitingRoom.h"
 
 class MenuManager
 {
@@ -24,6 +26,8 @@ private:
 	AboutMenu* oAboutMenu;
 	OptionsMenu* oOptionsMenu;
 	PauseMenu* oPauseMenu;
+	MultiplayerMenu* oMultiplayerMenu;
+	WaitingRoom* oWaitingRoom;
 	//Console* oConsole;
 	//LevelEditor* oLE;
 
@@ -38,7 +42,9 @@ public:
 		eGame,
 		eAbout,
 		eOptions,
-		ePasue,
+		ePause,
+		eMultiplayerMenu,
+		eWaitingRoom
 		//eLevelEditor,
 	};
 
@@ -70,6 +76,7 @@ public:
 	//Console* getConsole();
 	//LevelEditor* getLE();
 	OptionsMenu* getOptions();
+	MultiplayerMenu* getMultiplayerMenu();
 };
 
 #endif

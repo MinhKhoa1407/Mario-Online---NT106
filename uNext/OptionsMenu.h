@@ -16,6 +16,7 @@ private:
 	bool inSetKey, resetSetKey;
 
 	bool escapeToMainMenu;
+	//bool escapeToWaitingRoom;
 public:
 	OptionsMenu(void);
 	~OptionsMenu(void);
@@ -32,6 +33,7 @@ public:
 	void updateVolumeRect();
 
 	void setEscapeToMainMenu(bool escapeToMainMenu);
+	//void setEscapeToWaitingRoom(bool escapeToWaitingRoom);
 };
 
 #endif

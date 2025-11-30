@@ -1,4 +1,4 @@
-#include "header.h"
+ï»¿#include "header.h"
 #include "Core.h"
 #include "IMG.h"
 #include "CFG.h"
@@ -118,16 +118,18 @@ void CCore::Input() {
 	auto mm = CCFG::getMM(); // l?y MenuManager hi?n t?i
 	switch (mm->getViewID()) {
 	case MenuManager::eGame:
-	case MenuManager::ePasue:
 		if (!oMap->getInEvent()) {
-			InputPlayer(); // x? lı phím cho nhân v?t
+			InputPlayer();
 		}
 		else {
 			resetMove();
 		}
 		break;
+	case MenuManager::ePause:
+		InputMenu();   // âœ” xá»­ lÃ½ phÃ­m Ä‘Ãºng kiá»ƒu menu
+		break;
 	default:
-		InputMenu(); // x? lı phím trong menu chính
+		InputMenu(); // x? lÃ½ phÃ­m trong menu chÃ­nh
 		break;
 	}
 }
@@ -192,8 +194,8 @@ void CCore::InputPlayer() {
 	if (mainEvent->type == SDL_WINDOWEVENT) {
 		switch (mainEvent->window.event) {
 		case SDL_WINDOWEVENT_FOCUS_LOST:
-			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->ePasue);
-			CCFG::getMM()->setViewID(CCFG::getMM()->ePasue);
+			CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->ePause);
+			CCFG::getMM()->setViewID(CCFG::getMM()->ePause);
 			CCFG::getMusic()->PlayChunk(CCFG::getMusic()->cPASUE);
 			CCFG::getMusic()->PauseMusic();
 			break;
@@ -283,8 +285,8 @@ void CCore::InputPlayer() {
 			}
 		case SDLK_ESCAPE:
 			if (!keyMenuPressed && CCFG::getMM()->getViewID() == CCFG::getMM()->eGame) {
-				CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->ePasue);
-				CCFG::getMM()->setViewID(CCFG::getMM()->ePasue);
+				CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->ePause);
+				CCFG::getMM()->setViewID(CCFG::getMM()->ePause);
 				CCFG::getMusic()->PlayChunk(CCFG::getMusic()->cPASUE);
 				CCFG::getMusic()->PauseMusic();
 				keyMenuPressed = true;

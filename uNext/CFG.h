@@ -28,6 +28,7 @@ public:
 
 	static std::string localId;
 	static std::string idToken;
+	static std::string userName;
 
 	static std::string getKeyString(int keyID);
 
@@ -46,6 +47,9 @@ public:
 
 	static void setIdToken(std::string token) { idToken = token; };
 	static std::string getIdToken() { return idToken; };
+
+	static void setUserName(std::string name) { userName = name; };
+	static std::string getUserName() { return userName; };
 };
 
 #endif
