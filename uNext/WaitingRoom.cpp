@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <Windows.h> 
+#include <sstream>
 
 
 /* ******************************************** */
@@ -19,7 +20,8 @@ WaitingRoom::WaitingRoom(void) {
 
 	this->numOfMenuOptions = lMO.size();
 
-	this->selectWorld = this->selectChat = this->typing = false;
+	this->selectWorld = this->selectChat = this->typing = this->host = false;
+	runChatThread = false;
 
 	rSelectWorld.x = 122;
 	rSelectWorld.y = 280;
@@ -33,10 +35,37 @@ WaitingRoom::WaitingRoom(void) {
 }
 
 WaitingRoom::~WaitingRoom(void) {
+	runPlayerThread = false;
+	if (playerThread.joinable()) playerThread.join();
 
+	runChatThread = false;
 }
 
 /* ******************************************** */
+
+std::vector<std::string> ParseMessages(const std::string& raw)
+{
+	std::vector<std::string> out;
+	if (raw.size() < 2) return out;
+
+	// Bỏ dấu " bên ngoài
+	std::string s = raw.substr(1, raw.size() - 2);
+
+	size_t start = 0;
+	while (true) {
+		size_t quote1 = s.find('"', start);
+		if (quote1 == std::string::npos) break;
+
+		size_t quote2 = s.find('"', quote1 + 1);
+		if (quote2 == std::string::npos) break;
+
+		out.push_back(s.substr(quote1 + 1, quote2 - quote1 - 1));
+
+		start = quote2 + 1;
+	}
+
+	return out;
+}
 
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
 {
@@ -50,50 +79,77 @@ std::string GetMessagesFromAPI(std::string idRoom, std::string antiPlayerName) {
 	if (!curl) return responseString;
 
 	// URL gồm Id và playerName
-	std::string url = "https://localhost:7244/api/Rooms/getMessages/" + idRoom + "?antiPlayerName=" + antiPlayerName;
-
-	
+	std::string url = "https://localhost:7244/api/Rooms/getMessages/" + idRoom;
 
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	/*curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonBody.c_str());
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, jsonBody.size());*/
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
 
-	/*struct curl_slist* headers = nullptr;
-	headers = curl_slist_append(headers, "Content-Type: application/json");
-	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);*/
-
-	// Bật tắt SSL nếu chạy localhost
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
 	CURLcode res = curl_easy_perform(curl);
 
-	// Debug (bật khi cần)
-	// if (res == CURLE_OK)
-	//     std::cout << "Response: " << responseString << std::endl;
-	// else
-	//     std::cout << "Error: " << curl_easy_strerror(res) << std::endl;
-
-	//CURLcode res = curl_easy_perform(curl);
-
 	curl_easy_cleanup(curl);
 	return responseString;
+}
 
-	/*curl_slist_free_all(headers);
-	curl_easy_cleanup(curl);*/
+void CallEscapeRoomAPI(std::string idRoom, std::string userName) {
+	CURL* curl = curl_easy_init();
+	if (!curl) {
+		return;
+	}
+
+	std::string url = "https://localhost:7244/api/Rooms/" + idRoom + "?playerName=" + userName;
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	CURLcode res = curl_easy_perform(curl);
+
+	/*if (res != CURLE_OK) {
+		std::cerr << "Curl failed: " << curl_easy_strerror(res) << std::endl;
+	}*/
+
+	curl_easy_cleanup(curl);
+}
+
+std::string GetPlayersAPI(std::string idRoom) {
+	CURL* curl = curl_easy_init();
+	std::string responseString;
+
+	if (!curl) return "";
+
+	std::string url = "https://localhost:7244/api/Rooms/Players?Id=" + idRoom;
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+
+	return responseString;
 }
 
 void WaitingRoom::ChatFetchThread(std::string idRoom, std::string userName, std::vector<std::string>& chatMessages) {
 	while (runChatThread) {
-		std::string mess = GetMessagesFromAPI(idRoom, userName);
-		if (!mess.empty() && mess != "NULL") {
+		std::string raw = GetMessagesFromAPI(idRoom, userName);
+		auto list = ParseMessages(raw);
+
+		{
 			std::lock_guard<std::mutex> lock(chatMutex);
-			if (std::find(chatMessages.begin(), chatMessages.end(), mess) == chatMessages.end()) {
-				chatMessages.push_back(mess);
-			}
+			chatMessages = list; 
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	}
@@ -102,35 +158,18 @@ void WaitingRoom::ChatFetchThread(std::string idRoom, std::string userName, std:
 void WaitingRoom::Update() {
 	Menu::Update();
 
-	Uint32 now = SDL_GetTicks();
-	if (now - lastCheck >= 1000) {
-		lastCheck = now;
+	std::ifstream file("room_info.txt");
+	if (file.is_open()) {
+		std::getline(file, idRoom);
+		file.close();
+	}
 
-		std::ifstream file("room_info.txt");
-		if (file.is_open()) {
-			playerNames.clear();
-			std::string line;
+	if (!runPlayerThread) {
+		runPlayerThread = true;
 
-			int i = 0;
-			while (std::getline(file, line)) {
-				if (!line.empty()) {
-					if (i == 0) {
-						idRoom = line;
-						i = 1;
-						continue;
-					}
-					std::transform(line.begin(), line.end(), line.begin(), ::toupper);
-					playerNames.push_back(line);
-				}
-			}
+		if (playerThread.joinable()) playerThread.join();
 
-			file.close();
-		}
-
-		/*std::string mess = GetMessagesFromAPI(idRoom, CCFG::getUserName());
-		if (mess != "NULL" && std::find(chatMessages.begin(), chatMessages.end(), mess) == chatMessages.end()) {
-			chatMessages.push_back(mess);
-		}*/
+		playerThread = std::thread([this]() { this->PlayerFetchThread(idRoom); });
 	}
 }
 
@@ -141,25 +180,27 @@ void WaitingRoom::Draw(SDL_Renderer* rR) {
 	playerBox.w = 200;
 	playerBox.h = 180;
 
-	// nền mờ
 	SDL_SetRenderDrawBlendMode(rR, SDL_BLENDMODE_BLEND);
-	SDL_SetRenderDrawColor(rR, 0, 0, 0, 170);   // đen mờ
+	SDL_SetRenderDrawColor(rR, 0, 0, 0, 170); 
 	SDL_RenderFillRect(rR, &playerBox);
 
-	// viền trắng
 	SDL_SetRenderDrawColor(rR, 255, 255, 255, 255);
 	SDL_RenderDrawRect(rR, &playerBox);
 
-	// reset blend mode
 	SDL_SetRenderDrawBlendMode(rR, SDL_BLENDMODE_NONE);
 
 	Menu::Draw(rR);
-	//CCFG::getText()->Draw(rR, "WWW.LUKASZJAKOWSKI.PL", 4, CCFG::GAME_HEIGHT - 4 - 8, 8, 0, 0, 0);
-	//CCFG::getText()->Draw(rR, "WWW.LUKASZJAKOWSKI.PL", 5, CCFG::GAME_HEIGHT - 5 - 8, 8, 255, 255, 255);
 
 	CCFG::getText()->Draw(rR, "MEMBERS:", 50, 100, 18, 255, 255, 255);
+
+	std::vector<std::string> namesCopy;
+	{
+		std::lock_guard<std::mutex> lock(playerMutex);
+		namesCopy = playerNames;
+	}
+
 	int startY = 150;
-	for (const auto& name : playerNames) {
+	for (const auto& name : namesCopy) {
 		CCFG::getText()->Draw(rR, name, 40, startY, 14, 255, 255, 255);
 		startY += 22;
 	}
@@ -218,17 +259,15 @@ void WaitingRoom::Draw(SDL_Renderer* rR) {
 		SDL_SetRenderDrawColor(rR, 255, 255, 255, 255);
 		SDL_RenderDrawRect(rR, &chatBox);
 
-		// --- Vùng hiển thị tin nhắn ---
 		int messagesAreaHeight = chatBox.h - 50;
 		int startY = chatBox.y + 10;
 
 		for (const auto& msg : chatMessages) {
 			if (startY > chatBox.y + messagesAreaHeight) break;
-			CCFG::getText()->Draw(rR, msg, chatBox.x + 10, startY, 12, 255, 255, 255);
+			CCFG::getText()->Draw(rR, msg, chatBox.x + 10, startY, 10, 255, 255, 255);
 			startY += 18;
 		}
 
-		// --- Ô nhập tin nhắn ---
 		SDL_Rect inputBox = {
 			chatBox.x + 10,
 			chatBox.y + chatBox.h - 35,
@@ -242,8 +281,7 @@ void WaitingRoom::Draw(SDL_Renderer* rR) {
 		SDL_SetRenderDrawColor(rR, 255, 255, 255, 255);
 		SDL_RenderDrawRect(rR, &inputBox);
 
-		// **LUÔN HIỂN THỊ currentMessage**
-		CCFG::getText()->Draw(rR, currentMessage, inputBox.x + 5, inputBox.y + 5, 12, 255, 255, 255);
+		CCFG::getText()->Draw(rR, currentMessage, inputBox.x + 3, inputBox.y + 5, 10, 255, 255, 255);
 
 		SDL_SetRenderDrawBlendMode(rR, SDL_BLENDMODE_NONE);
 	}
@@ -259,6 +297,11 @@ void WaitingRoom::Draw(SDL_Renderer* rR) {
 void WaitingRoom::enter() {
 	switch (activeMenuOption) {
 	case 0:
+		if (!host) {
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Notice", "Chi co chu phong moi duoc phep bat dau man choi!", nullptr);
+			break;
+		}
+
 		if (!selectWorld) {
 			selectWorld = true;
 		}
@@ -289,6 +332,9 @@ void WaitingRoom::enter() {
 		break;
 	}
 	case 2:
+		CallEscapeRoomAPI(idRoom, CCFG::getUserName());
+		runPlayerThread = false;
+		if (playerThread.joinable()) playerThread.join();
 		CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
 		CCFG::getMM()->setViewID(CCFG::getMM()->eMainMenu);
 		break;
@@ -306,13 +352,17 @@ void WaitingRoom::escape() {
 		}
 		else {
 			selectChat = false;
-			runChatThread = false; // thread sẽ tự thoát vòng lặp
+			runChatThread = false; 
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}
 }
 
 void WaitingRoom::updateActiveButton(int iDir) {
+	if (!host && selectWorld) {
+		return;
+	}
+	
 	switch (iDir) {
 	case 0: case 2:
 		if (!selectWorld) {
@@ -368,10 +418,8 @@ void SendMessages(std::string idRoom, std::string name, std::string mess) {
 	CURL* curl = curl_easy_init();
 	if (!curl) return;
 
-	// URL gồm Id và playerName
 	std::string url = "https://localhost:7244/api/Rooms/sendMessages/" + idRoom + "/" + name;
 
-	// Body phải là JSON dạng string
 	std::string jsonBody = "\"" + mess + "\"";
 
 	std::string responseString;
@@ -387,17 +435,10 @@ void SendMessages(std::string idRoom, std::string name, std::string mess) {
 	headers = curl_slist_append(headers, "Content-Type: application/json");
 	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-	// Bật tắt SSL nếu chạy localhost
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
 	CURLcode res = curl_easy_perform(curl);
-
-	// Debug (bật khi cần)
-	// if (res == CURLE_OK)
-	//     std::cout << "Response: " << responseString << std::endl;
-	// else
-	//     std::cout << "Error: " << curl_easy_strerror(res) << std::endl;
 
 	curl_slist_free_all(headers);
 	curl_easy_cleanup(curl);
@@ -423,7 +464,6 @@ void WaitingRoom::handleChatInput(const SDL_Event& e) {
 				std::string trimmed = currentMessage.substr(first, last - first + 1);
 				if (!trimmed.empty()) {
 					SendMessages(idRoom, CCFG::getUserName(), trimmed);
-					chatMessages.push_back(trimmed);
 				}
 			}
 
@@ -433,5 +473,36 @@ void WaitingRoom::handleChatInput(const SDL_Event& e) {
 			typing = false;
 			SDL_StopTextInput();
 		}
+	}
+}
+
+void WaitingRoom::PlayerFetchThread(std::string idRoom) {
+	while (runPlayerThread) {
+		std::string raw = GetPlayersAPI(idRoom);
+		if (!raw.empty()) {
+			std::vector<std::string> names;
+
+			size_t start = raw.find("[");
+			size_t end = raw.find("]");
+			if (start != std::string::npos && end != std::string::npos) {
+				std::string list = raw.substr(start + 1, end - start - 1);
+				std::stringstream ss(list);
+				std::string item;
+				while (std::getline(ss, item, ',')) {
+					item.erase(remove(item.begin(), item.end(), '\"'), item.end());
+					item.erase(remove(item.begin(), item.end(), ' '), item.end());
+					if (!item.empty()) {
+						std::transform(item.begin(), item.end(), item.begin(), ::toupper);
+						names.push_back(item);
+					}
+				}
+			}
+
+			{
+				std::lock_guard<std::mutex> lock(playerMutex);
+				playerNames = names;
+			}
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 }

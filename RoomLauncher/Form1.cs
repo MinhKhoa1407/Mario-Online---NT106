@@ -30,6 +30,7 @@ namespace RoomLauncher
             InitializeComponent();
             SetupUI(mode);
             this.username = username;
+            this.FormClosing += Form1_FormClosing;
         }
 
         private void SetupUI(string mode)
@@ -158,6 +159,7 @@ namespace RoomLauncher
                     Status = data.Status,
                     PlayerCount = data.PlayerCount,
                     PlayerName = this.username,
+                    PlayerRoll = currentAction
                 };
                 var content = new StringContent(JsonConvert.SerializeObject(room), Encoding.UTF8, "application/json");
 
@@ -177,11 +179,11 @@ namespace RoomLauncher
                 mess = await response.Content.ReadAsStringAsync();
                 dynamic result = JsonConvert.DeserializeObject(mess);
 
-                File.AppendAllText("room_info.txt", $"{result.Id}\n");
-                foreach (string name in result.playerNames)
-                {
-                    File.AppendAllText("room_info.txt", $"{name}\n");
-                }
+                File.WriteAllText("room_info.txt", $"{result.Id}");
+                //foreach (string name in result.playerNames)
+                //{
+                //    File.AppendAllText("room_info.txt", $"{name}\n");
+                //}
                 this.Close();
             }
             catch (Exception ex) 
@@ -199,6 +201,14 @@ namespace RoomLauncher
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!File.Exists("room_info.txt"))
+            {
+                await client.DeleteAsync($"{apiBaseUrl}/{currentRoomId}?playerName={username}");
+            }
         }
     }
 }

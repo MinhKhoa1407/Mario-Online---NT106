@@ -25,16 +25,6 @@ namespace API.Controllers
         [HttpPost("logout")]
         public async Task Logout([FromBody] UsersRequest request)
         {
-            //Console.WriteLine("OK");
-            //if (request.localId == "" || request.idToken == "")
-            //{
-            //    Console.WriteLine("NO");
-            //}
-            //Console.WriteLine(request.localId);
-            //Console.WriteLine(request.idToken);
-            //string url = $"{databaseURL}/users/{request.LocalId}/online.json";
-            //await client.PutAsync(url, new StringContent("false", Encoding.UTF8, "application/json"));
-
             string url = $"{databaseURL}/users/{request.localId}/online.json?auth={request.idToken}";
             var response = await client.PutAsync(url, new StringContent("false", Encoding.UTF8, "application/json"));
             var respContent = await response.Content.ReadAsStringAsync();

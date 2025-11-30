@@ -15,7 +15,7 @@
 class WaitingRoom : public Menu
 {
 private:
-	bool selectWorld, selectChat, typing;
+	bool selectWorld, selectChat, typing, host;
 	int activeWorldID, activeSecondWorldID;
 
 	std::string currentMessage = "";
@@ -29,6 +29,10 @@ private:
 
 	std::mutex chatMutex;
 	std::atomic<bool> runChatThread;
+
+	std::thread playerThread;
+	bool runPlayerThread = false;
+	std::mutex playerMutex;
 public:
 	WaitingRoom(void);
 	~WaitingRoom(void);
@@ -45,6 +49,7 @@ public:
 	void handleChatInput(const SDL_Event& e);
 
 	void ChatFetchThread(std::string, std::string, std::vector<std::string>&);
+	void PlayerFetchThread(std::string);
 };
 
 #endif

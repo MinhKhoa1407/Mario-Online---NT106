@@ -71,9 +71,20 @@
         "Name": "id",
         "Type": "System.String",
         "IsRequired": true
+      },
+      {
+        "Name": "playerName",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "API.Controllers.RoomsController",
@@ -119,11 +130,6 @@
         "Name": "Id",
         "Type": "System.String",
         "IsRequired": true
-      },
-      {
-        "Name": "antiPlayerName",
-        "Type": "System.String",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []

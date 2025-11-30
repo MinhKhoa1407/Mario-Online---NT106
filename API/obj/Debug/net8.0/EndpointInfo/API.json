@@ -133,6 +133,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "playerName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -278,13 +285,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "antiPlayerName",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -313,6 +313,10 @@
             "format": "int32"
           },
           "playerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "playerRoll": {
             "type": "string",
             "nullable": true
           }

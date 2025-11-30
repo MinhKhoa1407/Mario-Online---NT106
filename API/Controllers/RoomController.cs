@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FirebaseAdmin.Messaging;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System;
 
 namespace API.Controllers
 {
@@ -14,11 +18,11 @@ namespace API.Controllers
     {
         public class Room
         {
-            //public string Id { get; set; } = Guid.NewGuid().ToString();
             public string Id { get; set; }
             public string Status { get; set; } = "Waiting";
             public int PlayerCount { get; set; } = 0;
             public string PlayerName { get; set; }
+            public string PlayerRoll { get; set; }
         }
 
         private readonly string firebaseDBUrl = "https://mario-online-d56ad-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -40,7 +44,6 @@ namespace API.Controllers
                 var responseString = await response.Content.ReadAsStringAsync();
                 dynamic result = JsonConvert.DeserializeObject(responseString);
                 newRoom.Id = Id;
-                //Console.WriteLine(responseString.ToString());
 
                 return Ok(newRoom);
             }
@@ -49,15 +52,44 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRoom(string id)
+        public async Task DeleteRoom([FromRoute]string id, [FromQuery]string playerName)
         {
-            var response = await _client.DeleteAsync($"{firebaseDBUrl}/rooms/{id}.json");
-
-            if (response.IsSuccessStatusCode)
+            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{id}.json?auth={dbSecret}");
+            var json = await response.Content.ReadAsStringAsync();
+            
+            dynamic data = JsonConvert.DeserializeObject(json);
+            if (data.PlayerCount < 2)
             {
-                return Ok(new { message = "Deleted successfully", roomId = id });
+                await _client.DeleteAsync($"{firebaseDBUrl}/rooms/{id}.json?auth={dbSecret}");
+                if (System.IO.File.Exists("room_info.txt"))
+                {
+                    System.IO.File.Delete("room_info.txt");
+                }
+                return;
             }
-            return BadRequest();
+
+            var players = ((JObject)data.Players).ToObject<Dictionary<string, string>>();
+
+            bool isHostLeaving = players[playerName] == "CREATE";
+
+            players.Remove(playerName);
+
+            if (isHostLeaving && players.Count > 0)
+            {
+                var firstPlayer = players.Keys.First();
+                players[firstPlayer] = "CREATE";
+            }
+
+            int newPlayerCount = players.Count;
+
+            var updateRoom = new
+            {
+                PlayerCount = newPlayerCount,
+                Players = players
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(updateRoom), Encoding.UTF8, "application/json");
+            await _client.PatchAsync($"{firebaseDBUrl}/rooms/{id}.json?auth={dbSecret}", content);
         }
 
         [HttpPost("check/{Id}")]
@@ -84,6 +116,7 @@ namespace API.Controllers
             {
                 return BadRequest("Phong da day");
             }
+
             room.PlayerCount = room.PlayerCount + 1;
             var update1 = new
             {
@@ -95,14 +128,8 @@ namespace API.Controllers
 
             await _client.PatchAsync($"{firebaseDBUrl}/rooms/{room.Id}.json?auth={dbSecret}", content);
 
-            //var update2 = new
-            //{
-            //    PlayerName = room.PlayerName,
-            //};
-            content = new StringContent(JsonConvert.SerializeObject("NULL"), Encoding.UTF8, "application/json");
+            content = new StringContent(JsonConvert.SerializeObject($"{room.PlayerRoll}"), Encoding.UTF8, "application/json");
             await _client.PutAsync($"{firebaseDBUrl}/rooms/{room.Id}/Players/{room.PlayerName}.json?auth={dbSecret}", content);
-
-            Console.WriteLine("OK");
 
             return Ok("Vao phong thanh cong!");
         }
@@ -112,7 +139,6 @@ namespace API.Controllers
         {
             var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Players.json?auth={dbSecret}");
             var json = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(json);
             JObject j = JObject.Parse(json);
 
             List<string> playerNames = new List<string>();
@@ -121,6 +147,7 @@ namespace API.Controllers
             {
                 string playerName = prop.Name;
                 string value = prop.Value.ToString();
+                if (value == "CREATE") playerName += "-HOST";
                 playerNames.Add(playerName);
             }
             var data = new
@@ -129,7 +156,6 @@ namespace API.Controllers
                 Id = Id,
             };
             string result = JsonConvert.SerializeObject(data);
-            Console.WriteLine(result);
 
             return Ok(result);
         }
@@ -137,37 +163,25 @@ namespace API.Controllers
         [HttpPost("sendMessages/{Id}/{playerName}")]
         public async Task SendMessages([FromRoute]string Id, [FromRoute]string playerName, [FromBody]string mess)
         {
-            Console.WriteLine(mess);
+            mess = $"{playerName.ToUpper()}: {mess}";
             var content = new StringContent(JsonConvert.SerializeObject(mess), Encoding.UTF8, "application/json");
-            var response = await _client.PutAsync($"{firebaseDBUrl}/rooms/{Id}/Players/{playerName}.json?auth={dbSecret}", content);
+            var response = await _client.PostAsync($"{firebaseDBUrl}/rooms/{Id}/Messages.json?auth={dbSecret}", content);
         }
 
         [HttpGet("getMessages/{Id}")]
-        public async Task<IActionResult> GetMessages([FromRoute]string Id, [FromQuery]string antiPlayerName)
+        public async Task<IActionResult> GetMessages([FromRoute]string Id)
         {
-            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Players.json?auth={dbSecret}");
+            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Messages.json?auth={dbSecret}");
             var json = await response.Content.ReadAsStringAsync();
 
             JObject j = JObject.Parse(json);
 
-            string chatMessage = "NULL";
+            List<string>chatMessage = new List<string>();
 
             foreach (var prop in j.Properties())
             {
-                string playerName = prop.Name;
-                string value = prop.Value.ToString();
-                if (playerName != antiPlayerName)
-                    chatMessage =  value;
+                chatMessage.Add(prop.Value.ToString());
             }
-
-            //var data = new
-            //{
-            //    playerNames = playerNames,
-            //    Id = Id,
-            //};
-            //string result = JsonConvert.SerializeObject(data);
-            //Console.WriteLine(result);
-
             return Ok(chatMessage);
         }
     }
