@@ -23,6 +23,22 @@
   },
   {
     "ContainingType": "API.Controllers.FirebaseController",
+    "Method": "GetPlayers",
+    "RelativePath": "api/Firebase/Players",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "API.Controllers.FirebaseController",
     "Method": "rankingBoard",
     "RelativePath": "api/Firebase/rankingBoard",
     "HttpMethod": "POST",
@@ -32,6 +48,22 @@
       {
         "Name": "request",
         "Type": "API.Controllers.FirebaseController\u002BUsersRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "API.Controllers.FirebaseController",
+    "Method": "SaveHistory",
+    "RelativePath": "api/Firebase/saveHistory",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "API.Controllers.FirebaseController\u002BSaveHistoryRequest",
         "IsRequired": true
       }
     ],
@@ -120,6 +152,22 @@
   },
   {
     "ContainingType": "API.Controllers.RoomsController",
+    "Method": "checkStatus",
+    "RelativePath": "api/Rooms/getLevel/{Id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "API.Controllers.RoomsController",
     "Method": "GetMessages",
     "RelativePath": "api/Rooms/getMessages/{Id}",
     "HttpMethod": "GET",
@@ -128,6 +176,27 @@
     "Parameters": [
       {
         "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "API.Controllers.RoomsController",
+    "Method": "GetPlayerState",
+    "RelativePath": "api/Rooms/getPlayerState/{Id}/{antiPlayerName}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "antiPlayerName",
         "Type": "System.String",
         "IsRequired": true
       }
@@ -197,5 +266,107 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "API.Controllers.RoomsController",
+    "Method": "sendState",
+    "RelativePath": "api/Rooms/sendPlayerState/{Id}/{playerName}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "playerName",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "state",
+        "Type": "API.Controllers.RoomsController\u002BPlayerState",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "API.Controllers.RoomsController",
+    "Method": "SetReady",
+    "RelativePath": "api/Rooms/setReady/{Id}/{playerName}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "playerName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "API.Controllers.RoomsController",
+    "Method": "setStatus",
+    "RelativePath": "api/Rooms/setStatus/{Id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "req",
+        "Type": "API.Controllers.RoomsController\u002BSetStatusRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "API.Controllers.RoomsController",
+    "Method": "StartGame",
+    "RelativePath": "api/Rooms/startGame/{Id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   }
 ]

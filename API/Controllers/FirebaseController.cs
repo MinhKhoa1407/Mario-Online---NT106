@@ -14,6 +14,7 @@ namespace API.Controllers
     public class FirebaseController : ControllerBase
     {
         string databaseURL = "https://mario-online-d56ad-default-rtdb.asia-southeast1.firebasedatabase.app";
+        private readonly string dbSecret = "ff9KeasJqDrjvuwctaUBO79jAjoKAnAO9OawFfUS";
         HttpClient client = new HttpClient();
 
         public class UsersRequest
@@ -56,7 +57,6 @@ namespace API.Controllers
             url = $"{databaseURL}/users/{UCrequest.localId}/score.json?auth={UCrequest.idToken}";
             response = await client.PutAsync(url, new StringContent($"{newScore}", Encoding.UTF8, "application/json"));
             var respContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(respContent);
         }
 
         [HttpPost("rankingBoard")]
@@ -83,8 +83,6 @@ namespace API.Controllers
                 score = int.Parse(u.Value["score"]?.ToString() ?? "0")
             }).ToList();
 
-            Console.WriteLine(usersList);
-
             return Ok(usersList);
         }
 
@@ -92,6 +90,73 @@ namespace API.Controllers
         {
             public string username { get; set; }
             public int score { get; set; }
+        }
+
+        public class SaveHistoryRequest
+        {
+            public string localId { get; set; }
+            public string idToken { get; set; }
+            public string mode { get; set; }
+            public string opponent { get; set; }
+            public string result { get; set; }
+            public int score { get; set; }
+            public int duration { get; set; }
+        }
+
+        [HttpPost("saveHistory")]
+        public async Task<IActionResult> SaveHistory([FromBody] SaveHistoryRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.localId))
+                return BadRequest("Invalid request");
+
+            var historyJson = new
+            {
+                timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                mode = request.mode,
+                opponent = request.opponent,
+                result = request.result,
+                score = request.score,
+                duration = request.duration
+            };
+
+            string jsonString = JsonConvert.SerializeObject(historyJson);
+
+            string url = $"{databaseURL}/users/{request.localId}/history.json?auth={request.idToken}";
+
+            var response = await client.PostAsync(url, new StringContent(jsonString, Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+                return Ok(new { success = true });
+            else
+            {
+                string respContent = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, respContent);
+            }
+        }
+
+        [HttpGet("Players")]
+        public async Task<IActionResult> GetPlayers(string Id)
+        {
+            var response = await client.GetAsync($"{databaseURL}/rooms/{Id}/Players.json?auth={dbSecret}");
+            var json = await response.Content.ReadAsStringAsync();
+            JObject j = JObject.Parse(json);
+
+            List<string> playerNames = new List<string>();
+
+            foreach (var prop in j.Properties())
+            {
+                string playerName = prop.Name;
+                string value = prop.Value.ToString();
+                playerNames.Add(playerName);
+            }
+            var data = new
+            {
+                playerNames = playerNames,
+                Id = Id,
+            };
+            string result = JsonConvert.SerializeObject(data);
+
+            return Ok(result);
         }
     }
 }

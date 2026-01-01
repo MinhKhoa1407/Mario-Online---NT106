@@ -147,7 +147,10 @@ namespace API.Controllers
             {
                 string playerName = prop.Name;
                 string value = prop.Value.ToString();
-                if (value == "CREATE") playerName += "-HOST";
+                if (value == "CREATE") 
+                    playerName += "-HOST";
+                else if (value == "READY")
+                    playerName += "-READY";
                 playerNames.Add(playerName);
             }
             var data = new
@@ -183,6 +186,141 @@ namespace API.Controllers
                 chatMessage.Add(prop.Value.ToString());
             }
             return Ok(chatMessage);
+        }
+
+        [HttpPost("setReady/{Id}/{playerName}")]
+        public async Task SetReady([FromRoute] string Id, [FromRoute] string playerName)
+        {
+            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Players/{playerName}.json?auth={dbSecret}");
+            var json = await response.Content.ReadAsStringAsync();
+            json = json.Trim('"');
+
+            string data;
+            if (json.ToString() == "JOIN")
+                data = "READY";
+            else
+                data = "JOIN";
+
+            var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
+            await _client.PutAsync($"{firebaseDBUrl}/rooms/{Id}/Players/{playerName}.json?auth={dbSecret}", content);
+        }
+
+        [HttpPost("startGame/{Id}")]
+        public async Task<IActionResult> StartGame([FromRoute]string Id)
+        {
+            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Players.json?auth={dbSecret}");
+            var json = await response.Content.ReadAsStringAsync();
+            JObject j = JObject.Parse(json);
+
+            //List<string> playerNames = new List<string>();
+
+            foreach (var prop in j.Properties())
+            {
+                string playerName = prop.Name;
+                string value = prop.Value.ToString();
+                if (value == "JOIN") return BadRequest();
+            }
+
+            return Ok();
+        }
+
+        public class SetStatusRequest
+        {
+            public int World { get; set; }
+            public int SubWorld { get; set; }
+        }
+
+        [HttpPost("setStatus/{Id}")]
+        public async Task setStatus([FromRoute]string Id, [FromBody]SetStatusRequest req)
+        {
+            int levelId = req.World * 4 + req.SubWorld;
+            var update = new
+            {
+                Status = "Playing",
+                Level = new
+                {
+                    World = req.World,
+                    SubWorld = req.SubWorld,
+                    LevelId = levelId
+                }
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(update), Encoding.UTF8, "application/json");
+            await _client.PatchAsync($"{firebaseDBUrl}/rooms/{Id}.json?auth={dbSecret}", content);
+        }
+
+        [HttpPost("getLevel/{Id}")]
+        public async Task<IActionResult> checkStatus([FromRoute]string Id)
+        {
+            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Status.json?auth={dbSecret}");
+            if (!response.IsSuccessStatusCode)
+            {
+                return NotFound();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            string status = JsonConvert.DeserializeObject<string>(json);
+            if (status != "Playing")
+                return BadRequest();
+
+            response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/Level/LevelId.json?auth={dbSecret}");
+            json = await response.Content.ReadAsStringAsync();
+            int levelID = JsonConvert.DeserializeObject<int>(json);
+            
+            return Ok(levelID);
+        }
+
+        public class PlayerState
+        {
+            public float x { get; set; }
+            public float y { get; set; }
+            public bool dir { get; set; }
+            public bool move { get; set; }
+            public int moveSpeed { get; set; }
+            public int jumpState { get; set; }
+            public bool squat { get; set; }
+            public int power { get; set; }
+            public int sprite { get; set; }
+            public int lives { get; set; }
+            public bool star { get; set; }
+            public uint tick { get; set; }
+            public int score { get; set; }
+        }
+
+        [HttpPost("sendPlayerState/{Id}/{playerName}")]
+        public async Task sendState([FromRoute] string Id, [FromRoute] string playerName, [FromBody] PlayerState state)
+        {
+            var content = new StringContent(JsonConvert.SerializeObject(state), Encoding.UTF8, "application/json");
+            await _client.PutAsync($"{firebaseDBUrl}/rooms/{Id}/playerStates/{playerName}.json?auth={dbSecret}", content);
+        }
+
+
+        [HttpGet("getPlayerState/{Id}/{antiPlayerName}")]
+        public async Task<IActionResult> GetPlayerState([FromRoute] string Id, [FromRoute] string antiPlayerName)
+        {
+            var response = await _client.GetAsync($"{firebaseDBUrl}/rooms/{Id}/playerStates.json?auth={dbSecret}");
+
+            if (!response.IsSuccessStatusCode)
+                return NotFound();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            if (json == "null")
+                return NotFound();
+
+            JObject states = JObject.Parse(json);
+
+            foreach (var prop in states.Properties())
+            {
+                string playerName = prop.Name;
+
+                if (playerName == antiPlayerName)
+                    continue;
+
+                return Ok(prop.Value.ToString());
+            }
+
+            return NotFound();
         }
     }
 }
