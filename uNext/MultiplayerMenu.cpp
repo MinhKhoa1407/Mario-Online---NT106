@@ -91,6 +91,7 @@ void MultiplayerMenu::enter() {
         std::getline(file, result);*/
 
         file.close();
+        CCFG::getMM()->getWaitingRoom()->ResetState();
         CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eWaitingRoom);
         CCFG::getMM()->setViewID(CCFG::getMM()->eWaitingRoom);
         break;
@@ -104,6 +105,7 @@ void MultiplayerMenu::enter() {
         std::getline(file, result);*/
 
         file.close();
+        CCFG::getMM()->getWaitingRoom()->ResetState();
         CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eWaitingRoom);
         CCFG::getMM()->setViewID(CCFG::getMM()->eWaitingRoom);
         break;

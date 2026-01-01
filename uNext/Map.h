@@ -72,7 +72,8 @@ private:
 	int iLevelType; // 0, 1, 2;
 	bool underWater;
 
-	int iSpawnPointID;
+	int iSpawnPointID1;
+	int iSpawnPointID2;
 
 	bool bMoveMap;
 
@@ -83,7 +84,9 @@ private:
 	Event* oEvent;
 
 	// ----- PLAYER -----
-	Player* oPlayer;
+	Player* oPlayer1;
+	Player* oPlayer2;
+	bool isMultiplayer;
 
 	// ----- MINIONS -----
 	std::vector<std::vector<Minion*>> lMinion;
@@ -121,10 +124,10 @@ private:
 
 	void createMap();
 
-	void checkSpawnPoint();
+	void checkSpawnPoint(Player*, int&);
 	int getNumOfSpawnPoints();
 	int getSpawnPointXPos(int iID);
-	int getSpawnPointYPos(int iID);
+	int getSpawnPointYPos(int iID, Player*);
 
 	void loadLVL_1_1();
 	void loadLVL_1_2();
@@ -213,9 +216,9 @@ private:
 	void clearLevelText();
 
 	void pipeUse();
-	void EndUse();
-	void EndBoss();
-	void EndBonus();
+	void EndUse(Player*);
+	void EndBoss(Player*);
+	void EndBonus(Player*);
 
 	void TPUse();
 	void TPUse2();
@@ -227,18 +230,66 @@ private:
 
 	void clearMap();
 	void clearMinions();
+
+	std::thread netThread;
+	std::mutex stateMutex;
+
+	std::atomic<bool> runNetThread{ false };
+	bool hasNewState = false;
+
+	// ===== INTERNAL =====
+	void PlayerStateSendThread();
+	void PlayerStateRecvThread();
+
+	bool hasRemoteState = false;
+	std::mutex remoteMutex;
+
+	std::thread netRecvThread;
+
+	float remoteTargetX = 0.0f;
+	float remoteTargetY = 0.0f;
+	bool hasRemoteTarget = false;
 public:
 	Map(void);
 	Map(SDL_Renderer* rR);
 	~Map(void);
 
+	struct PlayerStateDTO {
+		float x;
+		float y;
+		bool dir;
+		bool move;
+		int moveSpeed;
+
+		int jumpState;
+		bool squat;
+		int power;
+		int sprite;
+		int lives;
+		bool star;
+		uint32_t tick;
+
+		int score;
+	};
+
+	PlayerStateDTO sharedState;
+	PlayerStateDTO remoteState;
+
+	void CallAPIForSendState(std::string, std::string, const PlayerStateDTO);
+	bool CallAPIForGetState(std::string, std::string, PlayerStateDTO&);
+
+	void StartMultiplayerNet();
+	void StopMultiplayerNet();
+
 	void Update();
 
-	void UpdatePlayer();
+	void UpdatePlayer1();
 	void UpdateMinions();
 	void UpdateMinionsCollisions();
 	void UpdateBlocks();
 	void UpdateMinionBlokcs();
+
+	void CheckPlayerMinionCollision(Player*);
 
 	void Draw(SDL_Renderer* rR);
 	void DrawMap(SDL_Renderer* rR);
@@ -249,7 +300,7 @@ public:
 	void moveMap(int iX, int iY);
 	void setSpawnPoint();
 
-	bool blockUse(int nX, int nY, int iBlockID, int POS);
+	bool blockUse(int nX, int nY, int iBlockID, int POS, Player*);
 
 	void addPoints(int X, int Y, std::string sText, int iW, int iH);
 	void addGoombas(int iX, int iY, bool moveDirection);
@@ -385,7 +436,8 @@ public:
 	bool getDrawLines();
 	void setDrawLines(bool drawLines);
 
-	void setSpawnPointID(int iSpawnPointID);
+	void setSpawnPointID1(int iSpawnPointID);
+	void setSpawnPointID2(int iSpawnPointID);
 
 	int getMapWidth();
 
@@ -394,6 +446,8 @@ public:
 	MapLevel* getMapBlock(int iX, int iY);
 
 	Player* getPlayer();
+	Player* getPlayer2();
+
 	Platform* getPlatform(int iID);
 
 	Flag* getFlag();
@@ -404,6 +458,11 @@ public:
 	Event* getEvent();
 	bool getInEvent();
 	void setInEvent(bool inEvent);
+
+	void setMultiplayer(bool);
+	bool getMultiPlayer();
+
+	void OnGameOver();
 };
 
 #endif

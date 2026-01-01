@@ -3,6 +3,8 @@
 #include "math.h"
 #include "stdlib.h"
 #include "time.h"
+#include "Core.h"
+#include <sstream>
 
 /* ******************************************** */
 
@@ -11,7 +13,11 @@ Map::Map(void) {
 }
 
 Map::Map(SDL_Renderer* rR) {
-	oPlayer = new Player(rR, 84, 368);
+	this->isMultiplayer = false;
+
+	oPlayer1 = new Player(rR, 84, 368);
+	oPlayer2 = new Player(rR, 84, 368);
+	oPlayer2->setRemote(true);
 
 	this->currentLevelID = 0;
 
@@ -25,7 +31,8 @@ Map::Map(SDL_Renderer* rR) {
 
 	this->inEvent = false;
 
-	this->iSpawnPointID = 0;
+	this->iSpawnPointID1 = 0;
+	this->iSpawnPointID2 = 0;
 
 	this->bMoveMap = true;
 
@@ -55,20 +62,303 @@ Map::~Map(void) {
 
 	delete oEvent;
 	delete oFlag;
+
+	if (oPlayer2) {
+		delete oPlayer2;
+		oPlayer2 = nullptr;
+	}
+
+	StopMultiplayerNet();
 }
 
 /* ******************************************** */
 
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+	if (!userp || !contents) return 0;
+
+	std::string* str = static_cast<std::string*>(userp);
+	str->append(static_cast<char*>(contents), size * nmemb);
+	return size * nmemb;
+}
+
+void Map::StartMultiplayerNet() {
+	if (runNetThread) return;
+
+	runNetThread = true;
+	netThread = std::thread(&Map::PlayerStateSendThread, this);
+	netRecvThread = std::thread(&Map::PlayerStateRecvThread, this);
+}
+
+void Map::StopMultiplayerNet() {
+	runNetThread = false;
+
+	if (netThread.joinable())
+		netThread.join();
+
+	if (netRecvThread.joinable())
+		netRecvThread.join();
+}
+
+static bool GetJsonFloat(const std::string& json, const std::string& key, float& out) {
+	size_t pos = json.find("\"" + key + "\"");
+	if (pos == std::string::npos) return false;
+
+	pos = json.find(":", pos);
+	if (pos == std::string::npos) return false;
+
+	try {
+		out = std::stof(json.substr(pos + 1));
+	}
+	catch (...) {
+		return false;
+	}
+	return true;
+}
+
+static bool GetJsonInt(const std::string& json, const std::string& key, int& out) {
+	size_t pos = json.find("\"" + key + "\"");
+	if (pos == std::string::npos) return false;
+
+	pos = json.find(":", pos);
+	if (pos == std::string::npos) return false;
+
+	try {
+		out = std::stoi(json.substr(pos + 1));
+	}
+	catch (...) {
+		return false;
+	}
+	return true;
+}
+
+static bool GetJsonBool(const std::string& json, const std::string& key, bool& out) {
+	size_t pos = json.find("\"" + key + "\"");
+	if (pos == std::string::npos) return false;
+
+	pos = json.find(":", pos);
+	if (pos == std::string::npos) return false;
+
+	std::string val = json.substr(pos + 1);
+	out = (val.find("true") != std::string::npos);
+	return true;
+}
+
+bool Map::CallAPIForGetState(std::string roomId, std::string playerName, PlayerStateDTO& outState) {
+	CURL* curl = curl_easy_init();
+	if (!curl) return false;
+
+	std::string response;
+	std::string url =
+		"https://localhost:7244/api/Rooms/getPlayerState/" +
+		roomId + "/" + playerName;
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000L);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, 500L);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	CURLcode res = curl_easy_perform(curl);
+
+	long httpCode = 0;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+	curl_easy_cleanup(curl);
+
+	if (res != CURLE_OK)
+		return false;
+
+	if (httpCode == 404 || response.empty() || response == "null")
+		return false;
+
+	GetJsonFloat(response, "x", outState.x);
+	GetJsonFloat(response, "y", outState.y);
+	GetJsonBool(response, "dir", outState.dir);
+	GetJsonBool(response, "move", outState.move);
+	GetJsonInt(response, "moveSpeed", outState.moveSpeed);
+	GetJsonInt(response, "jumpState", outState.jumpState);
+	GetJsonBool(response, "squat", outState.squat);
+	GetJsonInt(response, "power", outState.power);
+	GetJsonInt(response, "sprite", outState.sprite);
+	GetJsonInt(response, "lives", outState.lives);
+	GetJsonBool(response, "star", outState.star);
+	GetJsonInt(response, "score", outState.score);
+
+	return true;
+}
+
+
+void Map::CallAPIForSendState(std::string roomId, std::string playerName, const PlayerStateDTO s) {
+	std::stringstream ss;
+	ss << "{"
+		<< "\"x\":" << s.x << ","
+		<< "\"y\":" << s.y << ","
+		<< "\"dir\":" << (s.dir ? "true" : "false") << ","
+		<< "\"move\":" << (s.move ? "true" : "false") << ","
+		<< "\"moveSpeed\":" << s.moveSpeed << ","
+		<< "\"jumpState\":" << s.jumpState << ","
+		<< "\"squat\":" << (s.squat ? "true" : "false") << ","
+		<< "\"power\":" << s.power << ","
+		<< "\"sprite\":" << s.sprite << ","
+		<< "\"lives\":" << s.lives << ","
+		<< "\"star\":" << (s.star ? "true" : "false") << ","
+		<< "\"tick\":" << s.tick << ","
+		<< "\"score\":" << s.score
+		<< "}";
+
+	std::string jsonBody = ss.str();
+
+	CURL* curl = curl_easy_init();
+	if (!curl) return;
+
+	std::string url =
+		"https://localhost:7244/api/Rooms/sendPlayerState/" +
+		roomId + "/" + playerName;
+
+	struct curl_slist* headers = nullptr;
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonBody.c_str());
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, jsonBody.size());
+
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	CURLcode res = curl_easy_perform(curl);
+
+	if(res != CURLE_OK) {
+		std::string err = std::string("CURL ERROR: ") + curl_easy_strerror(res);
+
+		printf("%s\n", err.c_str());
+
+		SDL_ShowSimpleMessageBox(
+			SDL_MESSAGEBOX_ERROR,
+			"CURL ERROR",
+			err.c_str(),
+			nullptr
+		);
+	}
+
+	curl_slist_free_all(headers);
+	curl_easy_cleanup(curl);
+}
+
+void Map::PlayerStateRecvThread() {
+	std::string roomId = CCFG::getMM()->getWaitingRoom()->getIdRoom();
+	std::string antiPlayer = CCFG::getUserName();
+
+	while (runNetThread) {
+		PlayerStateDTO s;
+
+		if (CallAPIForGetState(roomId, antiPlayer, s)) {
+			std::lock_guard<std::mutex> lock(remoteMutex);
+			remoteTargetX = s.x;
+			remoteTargetY = s.y;
+			remoteState = s;          
+			hasRemoteTarget = true;
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	}
+}
+
+void Map::PlayerStateSendThread() {
+	std::string roomId = CCFG::getMM()->getWaitingRoom()->getIdRoom();
+	std::string playerName = CCFG::getUserName();
+
+	while (runNetThread) {
+		PlayerStateDTO s;
+		bool send = false;
+
+		{
+			std::lock_guard<std::mutex> lock(stateMutex);
+			if (hasNewState) {
+				s = sharedState;
+				hasNewState = false;
+				send = true;
+			}
+		}
+
+		if (send) {
+			CallAPIForSendState(roomId, playerName, s);
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	}
+}
 void Map::Update() {
 	UpdateBlocks();
 
-	if(!oPlayer->getInLevelAnimation()) {
+	if(!oPlayer1->getInLevelAnimation()) {
 		UpdateMinionBlokcs();
 
 		UpdateMinions();
 		
 		if(!inEvent) {
-			UpdatePlayer();
+			UpdatePlayer1();
+
+			if (isMultiplayer) {
+				Player* p = oPlayer1;
+				if (p) {
+					std::lock_guard<std::mutex> lock(stateMutex);
+
+					sharedState.x = p->getWorldX();
+					sharedState.y = p->getYPos();
+					sharedState.dir = p->getMoveDirection();
+					sharedState.move = p->getMove();
+					sharedState.moveSpeed = p->getMoveSpeed();
+					sharedState.jumpState = p->getJumpState();
+					sharedState.squat = p->getSquat();
+					sharedState.power = p->getPowerLVL();
+					sharedState.sprite = p->getMarioSpriteID() % 11;
+					sharedState.lives = p->getNumOfLives();
+					sharedState.star = p->getStarEffect();
+					sharedState.tick = SDL_GetTicks();
+					sharedState.score = p->getScore();
+
+					hasNewState = true;
+				}
+			}
+
+			if (isMultiplayer && oPlayer2 && hasRemoteTarget) {
+				std::lock_guard<std::mutex> lock(remoteMutex);
+				hasRemoteTarget = false;
+
+				oPlayer2->setTargetX(remoteState.x);
+				oPlayer2->setTargetY(remoteState.y);
+
+				oPlayer2->setMoveDirection(remoteState.dir);
+				oPlayer2->setMoveSpeed(remoteState.moveSpeed);
+
+				if (remoteState.move)
+					oPlayer2->startMove();
+				else
+					oPlayer2->stopMove();
+
+				oPlayer2->setSquat(remoteState.squat);
+
+				if (oPlayer2->getPowerLVL() != remoteState.power) {
+					oPlayer2->setPowerLVL(remoteState.power);
+				}
+
+				oPlayer2->setMarioSpriteID(remoteState.sprite);
+				oPlayer2->setStarEffect(remoteState.star);
+				oPlayer2->setScore(remoteState.score);
+			}
+
+			if (isMultiplayer && oPlayer2) {
+				oPlayer2->UpdateRemote();
+			}
 
 			++iFrameID;
 			if(iFrameID > 32) {
@@ -83,7 +373,9 @@ void Map::Update() {
 					}
 
 					if(iMapTime <= 0) {
-						playerDeath(true, true);
+						if (!isMultiplayer) {
+							playerDeath(true, true);
+						}
 					}
 				}
 			}
@@ -95,7 +387,11 @@ void Map::Update() {
 			vPlatform[i]->Update();
 		}
 	} else {
-		oPlayer->powerUPAnimation();
+		oPlayer1->powerUPAnimation();
+
+		if (isMultiplayer && oPlayer2) {
+			oPlayer2->powerUPAnimation();
+		}
 	}
 
 	for(unsigned int i = 0; i < lBlockDebris.size(); i++) {
@@ -127,10 +423,17 @@ void Map::Update() {
 	}
 }
 
-void Map::UpdatePlayer() {
-	oPlayer->Update();
-	checkSpawnPoint();
+void Map::UpdatePlayer1() {
+	oPlayer1->Update();
+	checkSpawnPoint(oPlayer1, iSpawnPointID1);
 }
+
+//void Map::UpdatePlayer2() {
+//	if (oPlayer2 != nullptr) {
+//		oPlayer2->Update();
+//		checkSpawnPoint(oPlayer2, iSpawnPointID2);
+//	}
+//}
 
 void Map::UpdateMinions() {
 	for(int i = 0; i < iMinionListSize; i++) {
@@ -167,6 +470,50 @@ void Map::UpdateMinions() {
 		if(lBubble[i]->getDestroy()) {
 			delete lBubble[i];
 			lBubble.erase(lBubble.begin() + i);
+		}
+	}
+}
+
+void Map::CheckPlayerMinionCollision(Player* p) {
+	if (p == nullptr || p->getInLevelAnimation())
+		return;
+
+	int listID = getListID(-(int)fXPos + p->getXPos());
+	int start = listID - (listID > 0 ? 1 : 0);
+	int end = listID + 1;
+
+	for (int i = start; i <= end; i++) {
+		for (unsigned int j = 0; j < lMinion[i].size(); j++) {
+			if (lMinion[i][j]->deadTime < 0) {
+
+				// --- X collision ---
+				bool hitX =
+					(p->getXPos() - fXPos >= lMinion[i][j]->getXPos() &&
+						p->getXPos() - fXPos <= lMinion[i][j]->getXPos() + lMinion[i][j]->iHitBoxX) ||
+
+					(p->getXPos() - fXPos + p->getHitBoxX() >= lMinion[i][j]->getXPos() &&
+						p->getXPos() - fXPos + p->getHitBoxX() <= lMinion[i][j]->getXPos() + lMinion[i][j]->iHitBoxX);
+
+				if (hitX) {
+
+					// --- Top collision ---
+					if (lMinion[i][j]->getYPos() - 2 <= p->getYPos() + p->getHitBoxY() &&
+						lMinion[i][j]->getYPos() + 16 >= p->getYPos() + p->getHitBoxY()) {
+
+						lMinion[i][j]->collisionWithPlayer(true);
+					}
+					// --- Side collision ---
+					else if (
+						(lMinion[i][j]->getYPos() <= p->getYPos() + p->getHitBoxY() &&
+							lMinion[i][j]->getYPos() + lMinion[i][j]->iHitBoxY >= p->getYPos() + p->getHitBoxY()) ||
+
+						(lMinion[i][j]->getYPos() <= p->getYPos() &&
+							lMinion[i][j]->getYPos() + lMinion[i][j]->iHitBoxY >= p->getYPos())
+						) {
+						lMinion[i][j]->collisionWithPlayer(false);
+					}
+				}
+			}
 		}
 	}
 }
@@ -287,21 +634,8 @@ void Map::UpdateMinionsCollisions() {
 		}
 	}
 
-	if(!inEvent && !oPlayer->getInLevelAnimation()) {
-		// ----- COLLISION WITH PLAYER
-		for(int i = getListID(-(int)fXPos + oPlayer->getXPos()) - (getListID(-(int)fXPos + oPlayer->getXPos()) > 0 ? 1 : 0), iSize = i + 2; i < iSize; i++) {
-			for(unsigned int j = 0, jSize = lMinion[i].size(); j < jSize; j++) {
-				if(lMinion[i][j]->deadTime < 0) {
-					if((oPlayer->getXPos() - fXPos >= lMinion[i][j]->getXPos() && oPlayer->getXPos() - fXPos <= lMinion[i][j]->getXPos() + lMinion[i][j]->iHitBoxX) || (oPlayer->getXPos() - fXPos + oPlayer->getHitBoxX() >= lMinion[i][j]->getXPos() && oPlayer->getXPos() - fXPos + oPlayer->getHitBoxX() <= lMinion[i][j]->getXPos() + lMinion[i][j]->iHitBoxX)) {
-						if(lMinion[i][j]->getYPos() - 2 <= oPlayer->getYPos() + oPlayer->getHitBoxY() && lMinion[i][j]->getYPos() + 16 >= oPlayer->getYPos() + oPlayer->getHitBoxY()) {
-							lMinion[i][j]->collisionWithPlayer(true);
-						} else if((lMinion[i][j]->getYPos() <= oPlayer->getYPos() + oPlayer->getHitBoxY() && lMinion[i][j]->getYPos() + lMinion[i][j]->iHitBoxY >= oPlayer->getYPos() + oPlayer->getHitBoxY()) || (lMinion[i][j]->getYPos() <= oPlayer->getYPos() && lMinion[i][j]->getYPos() + lMinion[i][j]->iHitBoxY >= oPlayer->getYPos())) {
-							lMinion[i][j]->collisionWithPlayer(false);
-						}
-					}
-				}
-			}
-		}
+	if(!inEvent) {
+		CheckPlayerMinionCollision(oPlayer1);
 	}
 }
 
@@ -388,11 +722,12 @@ void Map::Draw(SDL_Renderer* rR) {
 		lBubble[i]->Draw(rR, vBlock[lBubble[i]->getBlockID()]->getSprite()->getTexture());
 	}
 
-	oPlayer->Draw(rR);
+	oPlayer1->Draw(rR);
 
-	if(inEvent) {
-		oEvent->Draw(rR);
+	if (isMultiplayer && oPlayer2) {
+		oPlayer2->Draw(rR);
 	}
+
 
 	DrawGameLayout(rR);
 }
@@ -425,6 +760,7 @@ void Map::DrawMinions(SDL_Renderer* rR) {
 }
 
 void Map::DrawGameLayout(SDL_Renderer* rR) {
+	Player* oPlayer = oPlayer1;
 	CCFG::getText()->Draw(rR, "MARIO", 54, 16);
 
 	if(oPlayer->getScore() < 100) {
@@ -487,12 +823,16 @@ void Map::DrawLines(SDL_Renderer* rR) {
 /* ******************************************** */
 
 void Map::moveMap(int nX, int nY) {
-	if (fXPos + nX > 0) {
-		oPlayer->updateXPos((int)(nX - fXPos));
-		fXPos = 0;
+	/*if (isMultiplayer && oPlayer2) {
+		oPlayer2->setXPos(oPlayer2->getXPos() + nX);
+	}*/
+
+	if (fXPos + nX > 0) { 
+		oPlayer1->updateXPos((int)(nX - fXPos)); 
+		fXPos = 0; 
 	}
-	else {
-		this->fXPos += nX;
+	else { 
+		this->fXPos += nX; 
 	}
 }
 
@@ -564,6 +904,8 @@ bool Map::checkCollision(Vector2* nV, bool checkVisible) {
 }
 
 void Map::checkCollisionOnTopOfTheBlock(int nX, int nY) {
+	Player* oPlayer = oPlayer1;
+
 	switch(lMap[nX][nY + 1]->getBlockID()) {
 		case 29: case 71: case 72: case 73:// COIN
 			lMap[nX][nY + 1]->setBlockID(0);
@@ -3429,7 +3771,7 @@ void Map::createMap() {
 	this->bTP = false;
 }
 
-void Map::checkSpawnPoint() {
+void Map::checkSpawnPoint(Player* oPlayer, int& iSpawnPointID) {
 	if(getNumOfSpawnPoints() > 1) {
 		for(int i = iSpawnPointID + 1; i < getNumOfSpawnPoints(); i++) {
 			if(getSpawnPointXPos(i) > oPlayer->getXPos() - fXPos && getSpawnPointXPos(i) < oPlayer->getXPos() - fXPos + 128) {
@@ -3599,7 +3941,7 @@ int Map::getSpawnPointXPos(int iID) {
 	return 84;
 }
 
-int Map::getSpawnPointYPos(int iID) {
+int Map::getSpawnPointYPos(int iID, Player* oPlayer) {
 	switch(currentLevelID) {
 		case 1:
 			switch(iID) {
@@ -3621,30 +3963,44 @@ int Map::getSpawnPointYPos(int iID) {
 }
 
 void Map::setSpawnPoint() {
-	float X = (float)getSpawnPointXPos(iSpawnPointID);
+	float X = (float)getSpawnPointXPos(iSpawnPointID1);
 
 	if(X > 6*32) {
 		fXPos = -(X - 6*32);
-		oPlayer->setXPos(6*32);
-		oPlayer->setYPos((float)getSpawnPointYPos(iSpawnPointID));
+		oPlayer1->setXPos(6*32);
+		oPlayer1->setYPos((float)getSpawnPointYPos(iSpawnPointID1, oPlayer1));
 	} else {
 		fXPos = 0;
-		oPlayer->setXPos(X);
-		oPlayer->setYPos((float)getSpawnPointYPos(iSpawnPointID));
+		oPlayer1->setXPos(X);
+		oPlayer1->setYPos((float)getSpawnPointYPos(iSpawnPointID1, oPlayer1));
 	}
 
-	oPlayer->setMoveDirection(true);
+	oPlayer1->setMoveDirection(true);
+
+	if (isMultiplayer && oPlayer2 != nullptr) {
+		float X2 = (float)getSpawnPointXPos(iSpawnPointID2);
+		oPlayer2->setXPos(X2);
+		oPlayer2->setYPos((float)getSpawnPointYPos(iSpawnPointID2, oPlayer2));
+		oPlayer2->setMoveDirection(true);
+	}
 }
 
 void Map::resetGameData() {
 	this->currentLevelID = 0;
-	this->iSpawnPointID = 0;
+	this->iSpawnPointID1 = 0;
+	this->iSpawnPointID2 = 0;
 
-	oPlayer->setCoins(0);
-	oPlayer->setScore(0);
-	oPlayer->resetPowerLVL();
+	oPlayer1->setCoins(0);
+	oPlayer1->setScore(0);
+	oPlayer1->resetPowerLVL();
+	oPlayer1->setNumOfLives(3);
 
-	oPlayer->setNumOfLives(3);
+	if (isMultiplayer && oPlayer2 != nullptr) {
+		oPlayer2->setCoins(0);
+		oPlayer2->setScore(0);
+		oPlayer2->resetPowerLVL();
+		oPlayer2->setNumOfLives(3);
+	}
 
 	setSpawnPoint();
 
@@ -8515,7 +8871,7 @@ void Map::loadLVL_8_4() {
 /* ******************************************** */
 
 // ----- POS 0 = TOP, 1 = BOT
-bool Map::blockUse(int nX, int nY, int iBlockID, int POS) {
+bool Map::blockUse(int nX, int nY, int iBlockID, int POS, Player* oPlayer) {
 	if(POS == 0) {
 		switch(iBlockID) {
 			case 8: case 55: // ----- BlockQ
@@ -8630,10 +8986,10 @@ bool Map::blockUse(int nX, int nY, int iBlockID, int POS) {
 				pipeUse();
 				break;
 			case 40: case 41: case 123: case 124: case 182: // End
-				EndUse();
+				EndUse(oPlayer);
 				break;
 			case 82:
-				EndBoss();
+				EndBoss(oPlayer);
 				break;
 			default:
 				break;
@@ -8651,7 +9007,7 @@ bool Map::blockUse(int nX, int nY, int iBlockID, int POS) {
 			pipeUse();
 			break;
 		case 127: // BONUS END
-			EndBonus();
+			EndBonus(oPlayer);
 			break;
 		case 169:
 			TPUse();
@@ -8675,7 +9031,7 @@ void Map::pipeUse() {
 	}
 }
 
-void Map::EndUse() {
+void Map::EndUse(Player* oPlayer) {
 	inEvent = true;
 
 	oEvent->resetData();
@@ -9360,7 +9716,7 @@ void Map::EndUse() {
 	oEvent->vOLDLength.push_back(128);
 }
 
-void Map::EndBoss() {
+void Map::EndBoss(Player* oPlayer) {
 	inEvent = true;
 
 	oEvent->resetData();
@@ -9497,7 +9853,7 @@ void Map::EndBoss() {
 	}
 }
 
-void Map::EndBonus() {
+void Map::EndBonus(Player* oPlayer) {
 	inEvent = true;
 
 	oEvent->resetData();
@@ -9549,12 +9905,12 @@ void Map::EndBonus() {
 }
 
 void Map::playerDeath(bool animation, bool instantDeath) {
-	if((oPlayer->getPowerLVL() == 0 && !oPlayer->getUnkillAble()) || instantDeath) {
+	if((oPlayer1->getPowerLVL() == 0 && !oPlayer1->getUnkillAble()) || instantDeath) {
 		inEvent = true;
 
 		oEvent->resetData();
-		oPlayer->resetJump();
-		oPlayer->stopMove();
+		oPlayer1->resetJump();
+		oPlayer1->stopMove();
 
 		oEvent->iDelay = 150;
 		oEvent->newCurrentLevel = currentLevelID;
@@ -9563,13 +9919,13 @@ void Map::playerDeath(bool animation, bool instantDeath) {
 
 		oEvent->eventTypeID = oEvent->eNormal;
 
-		oPlayer->resetPowerLVL();
+		oPlayer1->resetPowerLVL();
 
 		if(animation) {
 			oEvent->iSpeed = 4;
 			oEvent->newLevelType = iLevelType;
 
-			oPlayer->setYPos(oPlayer->getYPos() + 4.0f);
+			oPlayer1->setYPos(oPlayer1->getYPos() + 4.0f);
 
 			oEvent->vOLDDir.push_back(oEvent->eDEATHNOTHING);
 			oEvent->vOLDLength.push_back(30);
@@ -9578,7 +9934,7 @@ void Map::playerDeath(bool animation, bool instantDeath) {
 			oEvent->vOLDLength.push_back(64);
 
 			oEvent->vOLDDir.push_back(oEvent->eDEATHBOT);
-			oEvent->vOLDLength.push_back(CCFG::GAME_HEIGHT - oPlayer->getYPos() + 128);
+			oEvent->vOLDLength.push_back(CCFG::GAME_HEIGHT - oPlayer1->getYPos() + 128);
 		} else {
 			oEvent->iSpeed = 4;
 			oEvent->newLevelType = iLevelType;
@@ -9590,11 +9946,11 @@ void Map::playerDeath(bool animation, bool instantDeath) {
 		oEvent->vOLDDir.push_back(oEvent->eNOTHING);
 		oEvent->vOLDLength.push_back(64);
 
-		if(oPlayer->getNumOfLives() > 1) {
+		if(oPlayer1->getNumOfLives() > 1) {
 			oEvent->vOLDDir.push_back(oEvent->eLOADINGMENU);
 			oEvent->vOLDLength.push_back(90);
 
-			oPlayer->setNumOfLives(oPlayer->getNumOfLives() - 1);
+			oPlayer1->setNumOfLives(oPlayer1->getNumOfLives() - 1);
 
 			CCFG::getMusic()->StopMusic();
 			CCFG::getMusic()->PlayChunk(CCFG::getMusic()->cDEATH);
@@ -9602,13 +9958,13 @@ void Map::playerDeath(bool animation, bool instantDeath) {
 			oEvent->vOLDDir.push_back(oEvent->eGAMEOVER);
 			oEvent->vOLDLength.push_back(90);
 
-			oPlayer->setNumOfLives(oPlayer->getNumOfLives() - 1);
+			oPlayer1->setNumOfLives(oPlayer1->getNumOfLives() - 1);
 
 			CCFG::getMusic()->StopMusic();
 			CCFG::getMusic()->PlayChunk(CCFG::getMusic()->cDEATH);
 		}
-	} else if(!oPlayer->getUnkillAble()) {
-		oPlayer->setPowerLVL(oPlayer->getPowerLVL() - 1);
+	} else if(!oPlayer1->getUnkillAble()) {
+		oPlayer1->setPowerLVL(oPlayer1->getPowerLVL() - 1);
 	}
 }
 
@@ -9621,8 +9977,8 @@ void Map::startLevelAnimation() {
 			break;
 		case 1:
 			oEvent->resetData();
-			oPlayer->resetJump();
-			oPlayer->stopMove();
+			oPlayer1->resetJump();
+			oPlayer1->stopMove();
 
 			oEvent->iSpeed = 2;
 			oEvent->newLevelType = 1;
@@ -9654,8 +10010,8 @@ void Map::startLevelAnimation() {
 			break;
 		case 5:
 			oEvent->resetData();
-			oPlayer->resetJump();
-			oPlayer->stopMove();
+			oPlayer1->resetJump();
+			oPlayer1->stopMove();
 
 			oEvent->iSpeed = 2;
 			oEvent->newLevelType = 2;
@@ -9688,8 +10044,8 @@ void Map::startLevelAnimation() {
 			break;
 		case 13:
 			oEvent->resetData();
-			oPlayer->resetJump();
-			oPlayer->stopMove();
+			oPlayer1->resetJump();
+			oPlayer1->stopMove();
 
 			oEvent->iSpeed = 2;
 			oEvent->newLevelType = 1;
@@ -9721,8 +10077,8 @@ void Map::startLevelAnimation() {
 			break;
 		case 25:
 			oEvent->resetData();
-			oPlayer->resetJump();
-			oPlayer->stopMove();
+			oPlayer1->resetJump();
+			oPlayer1->stopMove();
 
 			oEvent->iSpeed = 2;
 			oEvent->newLevelType = 2;
@@ -9755,8 +10111,8 @@ void Map::startLevelAnimation() {
 			break;
 		case 26:
 			oEvent->resetData();
-			oPlayer->resetJump();
-			oPlayer->stopMove();
+			oPlayer1->resetJump();
+			oPlayer1->stopMove();
 
 			oEvent->iSpeed = 2;
 			oEvent->newLevelType = 2;
@@ -10248,7 +10604,11 @@ void Map::setBlockID(int X, int Y, int iBlockID) {
 /* ******************************************** */
 
 Player* Map::getPlayer() {
-	return oPlayer;
+	return oPlayer1;
+}
+
+Player* Map::getPlayer2() {
+	return oPlayer2;
 }
 
 Platform* Map::getPlatform(int iID) {
@@ -10288,7 +10648,11 @@ void Map::setCurrentLevelID(int currentLevelID) {
 		this->currentLevelID = currentLevelID;
 		oEvent->resetRedraw();
 		loadLVL();
-		iSpawnPointID = 0;
+		iSpawnPointID1 = 0;
+
+		if (isMultiplayer && oPlayer2 != nullptr) {
+			iSpawnPointID2 = 0;
+		}
 	}
 
 	this->currentLevelID = currentLevelID;
@@ -10302,9 +10666,14 @@ void Map::setUnderWater(bool underWater) {
 	this->underWater = underWater;
 }
 
-void Map::setSpawnPointID(int iSpawnPointID) {
-	this->iSpawnPointID = iSpawnPointID;
+void Map::setSpawnPointID1(int iSpawnPointID) {
+	this->iSpawnPointID1 = iSpawnPointID;
 }
+
+void Map::setSpawnPointID2(int iSpawnPointID) {
+	this->iSpawnPointID2 = iSpawnPointID;
+}
+
 
 int Map::getMapTime() {
 	return iMapTime;
@@ -10364,4 +10733,18 @@ MapLevel* Map::getMapBlock(int iX, int iY) {
 
 Flag* Map::getFlag() {
 	return oFlag;
+}
+
+void Map::setMultiplayer(bool enable) {
+	this->isMultiplayer = enable;
+}
+
+bool Map::getMultiPlayer() {
+	return this->isMultiplayer;
+}
+
+void Map::OnGameOver() {
+	if (isMultiplayer) {
+		StopMultiplayerNet();
+	}
 }

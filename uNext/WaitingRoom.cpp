@@ -12,16 +12,15 @@
 /* ******************************************** */
 
 WaitingRoom::WaitingRoom(void) {
-	this->lMO.push_back(new MenuOption("PLAY", 40, 276));
+	this->lMO.push_back(new MenuOption("PLAY", 40, 276));;
 	this->lMO.push_back(new MenuOption("CHAT", 40, 308));
 	this->lMO.push_back(new MenuOption("ESCAPE", 40, 340));
 
-
-
 	this->numOfMenuOptions = lMO.size();
 
-	this->selectWorld = this->selectChat = this->typing = this->host = false;
+	this->selectWorld = this->selectChat = this->typing = this->host = this->ready = false;
 	runChatThread = false;
+	host = false;
 
 	rSelectWorld.x = 122;
 	rSelectWorld.y = 280;
@@ -29,6 +28,7 @@ WaitingRoom::WaitingRoom(void) {
 	rSelectWorld.h = 72;
 
 	this->activeWorldID = this->activeSecondWorldID = 0;
+	this->levelId = -1;
 	
 	playerNames.clear();
 	chatMessages.clear();
@@ -39,6 +39,12 @@ WaitingRoom::~WaitingRoom(void) {
 	if (playerThread.joinable()) playerThread.join();
 
 	runChatThread = false;
+	if (chatThread.joinable())
+		chatThread.join();
+
+	runStartGameThread = false;
+	if (startGameThread.joinable())
+		startGameThread.join();
 }
 
 /* ******************************************** */
@@ -142,6 +148,21 @@ std::string GetPlayersAPI(std::string idRoom) {
 	return responseString;
 }
 
+void CallSetReadyAPI(std::string idRoom, std::string playerName) {
+	CURL* curl = curl_easy_init();
+	if (!curl) return;
+
+	std::string url = "https://localhost:7244/api/Rooms/setReady/" + idRoom + "/" + playerName;
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_POST, 1L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // Nếu dùng https localhost
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	CURLcode res = curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+}
+
 void WaitingRoom::ChatFetchThread(std::string idRoom, std::string userName, std::vector<std::string>& chatMessages) {
 	while (runChatThread) {
 		std::string raw = GetMessagesFromAPI(idRoom, userName);
@@ -151,12 +172,16 @@ void WaitingRoom::ChatFetchThread(std::string idRoom, std::string userName, std:
 			std::lock_guard<std::mutex> lock(chatMutex);
 			chatMessages = list; 
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		std::this_thread::sleep_for(std::chrono::milliseconds(80));
 	}
 }
 
 void WaitingRoom::Update() {
 	Menu::Update();
+
+	if (activeMenuOption >= lMO.size()) {
+		activeMenuOption = lMO.empty() ? 0 : (int)lMO.size() - 1;
+	}
 
 	std::ifstream file("room_info.txt");
 	if (file.is_open()) {
@@ -170,6 +195,32 @@ void WaitingRoom::Update() {
 		if (playerThread.joinable()) playerThread.join();
 
 		playerThread = std::thread([this]() { this->PlayerFetchThread(idRoom); });
+	}
+
+	if (!lMO.empty()) {
+		lMO[0]->setText(isHostCached ? "PLAY" : "READY");
+	}
+
+	if (hostStarted) {
+		hostStarted = false;
+
+		runChatThread = false;
+		if (chatThread.joinable())
+			chatThread.join();
+
+		runPlayerThread = false;
+		if (playerThread.joinable()) playerThread.join();
+
+		CCFG::getMM()->getLoadingMenu()->updateTime();
+		CCore::getMap()->resetGameData();
+		CCore::getMap()->setCurrentLevelID(levelId);
+
+		CCFG::getMM()->setViewID(CCFG::getMM()->eGameLoading);
+		CCFG::getMM()->getLoadingMenu()->loadingType = true;
+		CCore::getMap()->setSpawnPointID2(0);
+
+		CCore::getMap()->setMultiplayer(true);
+		CCore::getMap()->StartMultiplayerNet();
 	}
 }
 
@@ -294,26 +345,115 @@ void WaitingRoom::Draw(SDL_Renderer* rR) {
 
 /* ******************************************** */
 
+void CallSetStatusAPI(std::string idRoom, int World, int SubWorld) {
+	CURL* curl = curl_easy_init();
+	if (!curl) return;
+
+	std::string url = "https://localhost:7244/api/Rooms/setStatus/" + idRoom;
+
+	std::string jsonBody =
+		"{"
+		"\"World\":" + std::to_string(World) + ","
+		"\"SubWorld\":" + std::to_string(SubWorld) +
+		"}";
+
+	struct curl_slist* headers = nullptr;
+	headers = curl_slist_append(headers, "Content-Type: application/json");
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonBody.c_str());
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, jsonBody.size());
+
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	CURLcode res = curl_easy_perform(curl);
+
+	curl_slist_free_all(headers);
+	curl_easy_cleanup(curl);
+}
+
 void WaitingRoom::enter() {
+	if (activeMenuOption < 0 || activeMenuOption >= lMO.size())
+		return;
+
 	switch (activeMenuOption) {
 	case 0:
 		if (!host) {
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Notice", "Chi co chu phong moi duoc phep bat dau man choi!", nullptr);
+			CallSetReadyAPI(idRoom, CCFG::getUserName());
+			if (ready) {
+				ready = false;
+				runStartGameThread = false;
+
+				if (startGameThread.joinable())
+					startGameThread.join();
+			}
+			else {
+				ready = true;
+				runStartGameThread = true;
+
+				if (!startGameThread.joinable()) {
+					startGameThread = std::thread(
+						&WaitingRoom::WaitForHostStartThread,
+						this,
+						idRoom
+					);
+				}
+			}
 			break;
 		}
-
-		if (!selectWorld) {
-			selectWorld = true;
-		}
 		else {
-			CCFG::getMM()->getLoadingMenu()->updateTime();
-			CCore::getMap()->resetGameData();
-			CCore::getMap()->setCurrentLevelID(activeWorldID * 4 + activeSecondWorldID);
-			CCFG::getMM()->setViewID(CCFG::getMM()->eGameLoading);
-			CCFG::getMM()->getLoadingMenu()->loadingType = true;
-			CCore::getMap()->setSpawnPointID(0);
-			//CCore::getMap()->setMultiplayerMode(false);
-			selectWorld = false;
+			if (!selectWorld) {
+				CURL* curl = curl_easy_init();
+				if (!curl) return;
+
+				std::string url = "https://localhost:7244/api/Rooms/startGame/" + idRoom;
+
+				curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+				curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+				CURLcode res = curl_easy_perform(curl);
+				long http_code = 0;
+				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+				curl_easy_cleanup(curl);
+
+				if (http_code == 200) {
+				}
+				else {
+					SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Notice", "Co thanh vien chua san sang!", nullptr);
+					break;
+				}
+				selectWorld = true;
+			}
+			else {
+				CallSetStatusAPI(idRoom, activeWorldID, activeSecondWorldID);
+
+				runChatThread = false;
+				if (chatThread.joinable())
+					chatThread.join();
+
+				runPlayerThread = false;
+				if (playerThread.joinable()) playerThread.join();
+
+				CCFG::getMM()->getLoadingMenu()->updateTime();
+				CCore::getMap()->resetGameData();
+				CCore::getMap()->setCurrentLevelID(activeWorldID * 4 + activeSecondWorldID);
+
+				CCFG::getMM()->setViewID(CCFG::getMM()->eGameLoading);
+				CCFG::getMM()->getLoadingMenu()->loadingType = true;
+				CCore::getMap()->setSpawnPointID1(0);
+
+				if (playerNames.size() == 2) {
+					CCore::getMap()->setMultiplayer(true);
+					CCore::getMap()->StartMultiplayerNet();
+				}
+				selectWorld = false;
+			}
 		}
 		break;
 	case 1:
@@ -323,8 +463,15 @@ void WaitingRoom::enter() {
 		}
 		else {
 			runChatThread = true;
-			std::thread t([this]() { this->ChatFetchThread(idRoom, CCFG::getUserName(), chatMessages); });
-			t.detach();
+			if (!chatThread.joinable()) {
+				chatThread = std::thread(
+					&WaitingRoom::ChatFetchThread,
+					this,
+					idRoom,
+					CCFG::getUserName(),
+					std::ref(chatMessages)
+				);
+			}
 
 			typing = true;
 			SDL_StartTextInput();
@@ -333,6 +480,17 @@ void WaitingRoom::enter() {
 	}
 	case 2:
 		CallEscapeRoomAPI(idRoom, CCFG::getUserName());
+		runPlayerThread = false;
+		host = false;
+
+		runChatThread = false;
+		if (chatThread.joinable())
+			chatThread.join();
+
+		runStartGameThread = false;
+		if (startGameThread.joinable())
+			startGameThread.join();
+
 		runPlayerThread = false;
 		if (playerThread.joinable()) playerThread.join();
 		CCFG::getMM()->resetActiveOptionID(CCFG::getMM()->eMainMenu);
@@ -477,7 +635,9 @@ void WaitingRoom::handleChatInput(const SDL_Event& e) {
 }
 
 void WaitingRoom::PlayerFetchThread(std::string idRoom) {
+	host = false;
 	while (runPlayerThread) {
+		/*ready = false;*/
 		std::string raw = GetPlayersAPI(idRoom);
 		if (!raw.empty()) {
 			std::vector<std::string> names;
@@ -491,10 +651,26 @@ void WaitingRoom::PlayerFetchThread(std::string idRoom) {
 				while (std::getline(ss, item, ',')) {
 					item.erase(remove(item.begin(), item.end(), '\"'), item.end());
 					item.erase(remove(item.begin(), item.end(), ' '), item.end());
-					if (!item.empty()) {
-						std::transform(item.begin(), item.end(), item.begin(), ::toupper);
-						names.push_back(item);
+
+					if (item.empty()) continue;
+
+					std::transform(item.begin(), item.end(), item.begin(), ::toupper);
+					names.push_back(item);
+
+					// Check host safely
+					if (!host && item.size() >= 5 && item.substr(item.size() - 5) == "-HOST") {
+						std::string pure = item.substr(0, item.size() - 5);
+
+						std::string user = CCFG::getUserName();
+						std::transform(user.begin(), user.end(), user.begin(), ::toupper);
+
+						if (pure == user) 
+							host = true;
 					}
+
+					/*if (item.size() >= 6 && item.substr(item.size() - 6) == "-READY") {
+						ready = true;
+					}*/
 				}
 			}
 
@@ -503,6 +679,106 @@ void WaitingRoom::PlayerFetchThread(std::string idRoom) {
 				playerNames = names;
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		isHostCached = host;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(80));
 	}
+}
+
+int CallGetLevelAPI(std::string idRoom) {
+	CURL* curl = curl_easy_init();
+	if (!curl) return -1;
+
+	std::string url = "https://localhost:7244/api/Rooms/getLevel/" + idRoom;
+	std::string response;
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_POST, 1L);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+	CURLcode res = curl_easy_perform(curl);
+
+	long httpCode = 0;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+
+	curl_easy_cleanup(curl);
+
+	if(httpCode != 200 || response.empty())
+		return -1;
+
+	response.erase(
+		std::remove(response.begin(), response.end(), '"'),
+		response.end()
+	);
+
+	try {
+		return std::stoi(response);
+	}
+	catch (...) {
+		return -1;
+	}
+}
+
+void WaitingRoom::WaitForHostStartThread(std::string idRoom) {
+	while (runStartGameThread) {
+		levelId = CallGetLevelAPI(idRoom);
+
+		if (levelId >= 0) {
+			hostStarted = true;
+
+			runStartGameThread = false;
+			return;
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(80));
+	}
+}
+
+void WaitingRoom::ResetState() {
+	// ===== STOP THREADS =====
+	runPlayerThread = false;
+	runChatThread = false;
+	runStartGameThread = false;
+
+	if (playerThread.joinable()) playerThread.join();
+	if (chatThread.joinable()) chatThread.join();
+	if (startGameThread.joinable()) startGameThread.join();
+
+	// ===== RESET FLAGS =====
+	selectWorld = false;
+	selectChat = false;
+	typing = false;
+	ready = false;
+	host = false;
+	isHostCached = false;
+
+	// ===== RESET DATA =====
+	{
+		std::lock_guard<std::mutex> lock(playerMutex);
+		playerNames.clear();
+	}
+
+	{
+		std::lock_guard<std::mutex> lock(chatMutex);
+		chatMessages.clear();
+	}
+
+	currentMessage.clear();
+
+	activeWorldID = 0;
+	activeSecondWorldID = 0;
+
+	SDL_StopTextInput();
+}
+
+std::string WaitingRoom::getIdRoom() {
+	return this->idRoom;
+}
+
+void WaitingRoom::CallEscapeRoom() {
+	CallEscapeRoomAPI(idRoom, CCFG::getUserName());
 }

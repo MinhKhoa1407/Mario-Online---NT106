@@ -14,6 +14,7 @@ private:
 	std::vector<Sprite*> sMario;
 	int iSpriteID;
 	unsigned int iMoveAnimationTime;
+	unsigned int iScore;
 
 	CIMG* tMarioLVLUP;
 
@@ -98,9 +99,13 @@ private:
 
 	Vector2* getBlockLT(float nX, float nY);
 	Vector2* getBlockRT(float nX, float nY);
-public:
-	static unsigned int iScore;
 
+	//------ For MultiPlayer
+	bool isRemote = false;
+	float targetX;
+	float targetY;
+
+public:
 	Player(SDL_Renderer* rR, float fXPos, float fYPos);
 	~Player(void);
 
@@ -111,6 +116,7 @@ public:
 
 	void updateXPos(int iN);
 	void updateYPos(int iN);
+	void UpdateRemote();
 
 	void powerUPAnimation();
 
@@ -181,7 +187,7 @@ public:
 
 	void addCoin();
 
-	static unsigned int getScore() { return iScore; };
+	unsigned int getScore() { return iScore; };
 	void setScore(unsigned int iScore);
 	void addComboPoints();
 	int getComboPoints();
@@ -189,6 +195,13 @@ public:
 	void setCoins(unsigned int iCoins);
 
 	void setSpringJump(bool springJump);
+
+	void setRemote(bool);
+
+	void setTargetX(float);
+	void setTargetY(float);
+
+	float getWorldX();
 };
 
 #endif

@@ -353,6 +353,9 @@ Player::~Player(void) {
 /* ******************************************** */
 
 void Player::Update() {
+	if (isRemote)
+		return;
+
 	playerPhysics();
 	movePlayer();
 
@@ -751,6 +754,11 @@ void Player::resetJump() {
 /* ******************************************** */
 
 void Player::updateXPos(int iN) {
+	if (isRemote) {
+		fXPos += iN;
+		return;
+	}
+
 	checkCollisionBot(iN, 0);
 	checkCollisionCenter(iN, 0);
 	if (iN > 0) {
@@ -819,7 +827,7 @@ void Player::updateYPos(int iN) {
 					Vector2* vRT = getBlockRT(fXPos - CCore::getMap()->getXPos(), fYPos + iN);
 
 					if(!CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID())->getVisible()) {
-						if(CCore::getMap()->blockUse(vRT->getX(), vRT->getY(), CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID(), 0)) {
+						if(CCore::getMap()->blockUse(vRT->getX(), vRT->getY(), CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID(), 0, this)) {
 							jumpState = 2;
 						} else {
 							fYPos += iN;
@@ -827,7 +835,7 @@ void Player::updateYPos(int iN) {
 					} else if((int)(fXPos + getHitBoxX() - CCore::getMap()->getXPos()) % 32 <= 8) {
 						updateXPos((int)-((int)(fXPos + getHitBoxX() - CCore::getMap()->getXPos()) % 32));
 					} else if(CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID())->getUse()) {
-						if(CCore::getMap()->blockUse(vRT->getX(), vRT->getY(), CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID(), 0)) {
+						if(CCore::getMap()->blockUse(vRT->getX(), vRT->getY(), CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID(), 0, this)) {
 							jumpState = 2;
 						} else {
 							fYPos += iN;
@@ -840,7 +848,7 @@ void Player::updateYPos(int iN) {
 				} else if (bLEFT && !bRIGHT) {
 					Vector2* vLT = getBlockLT(fXPos - CCore::getMap()->getXPos(), fYPos + iN);
 					if(!CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getVisible()) {
-						if(CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 0)) {
+						if(CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 0, this)) {
 							jumpState = 2;
 						} else {
 							fYPos += iN;
@@ -848,7 +856,7 @@ void Player::updateYPos(int iN) {
 					} else if ((int)(fXPos - CCore::getMap()->getXPos()) % 32 >= 24) {
 						updateXPos((int)(32 - (int)(fXPos - CCore::getMap()->getXPos()) % 32));
 					} else if(CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-						if(CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 0)) {
+						if(CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 0, this)) {
 							jumpState = 2;
 						} else {
 							fYPos += iN;
@@ -863,7 +871,7 @@ void Player::updateYPos(int iN) {
 						Vector2* vRT = getBlockRT(fXPos - CCore::getMap()->getXPos(), fYPos + iN);
 
 						if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID())->getUse()) {
-							if(CCore::getMap()->blockUse(vRT->getX(), vRT->getY(), CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID(), 0)) {
+							if(CCore::getMap()->blockUse(vRT->getX(), vRT->getY(), CCore::getMap()->getMapBlock(vRT->getX(), vRT->getY())->getBlockID(), 0, this)) {
 								jumpState = 2;
 							}
 						} else {
@@ -875,7 +883,7 @@ void Player::updateYPos(int iN) {
 						Vector2* vLT = getBlockLT(fXPos - CCore::getMap()->getXPos(), fYPos + iN);
 
 						if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-							if(CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 0)) {
+							if(CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 0, this)) {
 								jumpState = 2;
 							}
 						} else {
@@ -895,9 +903,18 @@ void Player::updateYPos(int iN) {
 		fYPos += 1;
 	}
 
-	if(!CCore::getMap()->getInEvent() && fYPos - getHitBoxY() > CCFG::GAME_HEIGHT) {
-		CCore::getMap()->playerDeath(false, true);
-		fYPos = -80;
+	if (!CCore::getMap()->getInEvent() &&
+		fYPos - getHitBoxY() > CCFG::GAME_HEIGHT)
+	{
+		if (isRemote) {
+			inLevelDownAnimation = true;
+			inLevelDownAnimationFrameID = 180;
+			setMarioSpriteID(0);
+		}
+		else {
+			CCore::getMap()->playerDeath(false, true);
+			fYPos = -80;
+		}
 	}
 }
 
@@ -907,7 +924,7 @@ bool Player::checkCollisionBot(int nX, int nY) {
 	Vector2* vLT = getBlockLB(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY);
 
 	if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-		CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 1);
+		CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 1, this);
 	}
 
 	delete vLT;
@@ -915,7 +932,7 @@ bool Player::checkCollisionBot(int nX, int nY) {
 	vLT = getBlockRB(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY);
 
 	if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-		CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 1);
+		CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 1, this);
 	}
 
 	delete vLT;
@@ -927,7 +944,7 @@ bool Player::checkCollisionCenter(int nX, int nY) {
 		Vector2* vLT = getBlockLC(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY);
 
 		if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2);
+			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2, this);
 		}
 
 		delete vLT;
@@ -935,7 +952,7 @@ bool Player::checkCollisionCenter(int nX, int nY) {
 		vLT = getBlockRC(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY);
 
 		if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2);
+			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2, this);
 		}
 
 		delete vLT;
@@ -943,7 +960,7 @@ bool Player::checkCollisionCenter(int nX, int nY) {
 		Vector2* vLT = getBlockLC(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY + (powerLVL > 0 ? 16 : 0));
 
 		if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2);
+			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2, this);
 		}
 
 		delete vLT;
@@ -951,7 +968,7 @@ bool Player::checkCollisionCenter(int nX, int nY) {
 		vLT = getBlockRC(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY + (powerLVL > 0 ? 16 : 0));
 
 		if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2);
+			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2, this);
 		}
 
 		delete vLT;
@@ -959,7 +976,7 @@ bool Player::checkCollisionCenter(int nX, int nY) {
 		vLT = getBlockLC(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY - (powerLVL > 0 ? 16 : 0));
 
 		if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2);
+			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2, this);
 		}
 
 		delete vLT;
@@ -967,7 +984,7 @@ bool Player::checkCollisionCenter(int nX, int nY) {
 		vLT = getBlockRC(fXPos - CCore::getMap()->getXPos() + nX, fYPos + nY - (powerLVL > 0 ? 16 : 0));
 
 		if (CCore::getMap()->getBlock(CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID())->getUse()) {
-			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2);
+			CCore::getMap()->blockUse(vLT->getX(), vLT->getY(), CCore::getMap()->getMapBlock(vLT->getX(), vLT->getY())->getBlockID(), 2, this);
 		}
 
 		delete vLT;
@@ -1005,15 +1022,48 @@ Vector2* Player::getBlockRT(float nX, float nY) {
 /* ******************************************** */
 
 void Player::Draw(SDL_Renderer* rR) {
-	if(!inLevelDownAnimation || CCore::getMap()->getInEvent()) {
-		sMario[getMarioSpriteID()]->getTexture()->Draw(rR, (int)fXPos, (int)fYPos + (CCore::getMap()->getInEvent() ? 0 : 2), !moveDirection);
-	} else {
-		if(inLevelDownAnimationFrameID%15 < (inLevelDownAnimationFrameID > 120 ? 7 : inLevelDownAnimationFrameID > 90 ? 9 : inLevelDownAnimationFrameID > 60 ? 11 : inLevelDownAnimationFrameID > 30 ? 13 : 14)) {
-			sMario[getMarioSpriteID()]->getTexture()->Draw(rR, (int)fXPos, (int)fYPos + (CCore::getMap()->getInEvent() ? 0 : 2), !moveDirection);
+	int drawX = (int)fXPos;
+	int drawY = (int)fYPos + (CCore::getMap()->getInEvent() ? 0 : 2);
+
+	if (isRemote) {
+		drawX += CCore::getMap()->getXPos();
+
+		int w = getHitBoxX();
+		int h = getHitBoxY();
+
+		const int margin = 32;
+
+		if (drawX + w < -margin || drawX > CCFG::GAME_WIDTH + margin ||
+			drawY + h < -margin || drawY > CCFG::GAME_HEIGHT + margin)
+		{
+			return;
+		}
+	}
+
+	if (!inLevelDownAnimation || CCore::getMap()->getInEvent()) {
+		sMario[getMarioSpriteID()]->getTexture()->Draw(
+			rR,
+			drawX,
+			drawY,
+			!moveDirection
+		);
+	}
+	else {
+		if (inLevelDownAnimationFrameID % 15 <
+			(inLevelDownAnimationFrameID > 120 ? 7 :
+				inLevelDownAnimationFrameID > 90 ? 9 :
+				inLevelDownAnimationFrameID > 60 ? 11 :
+				inLevelDownAnimationFrameID > 30 ? 13 : 14)) {
+
+			sMario[getMarioSpriteID()]->getTexture()->Draw(
+				rR,
+				drawX,
+				drawY,
+				!moveDirection
+			);
 		}
 	}
 }
-
 /* ******************************************** */
 
 int Player::getMarioSpriteID() {
@@ -1226,8 +1276,6 @@ void Player::setSpringJump(bool springJump) {
 	this->springJump = springJump;
 }
 
-unsigned int Player::iScore = 0;
-
 //unsigned int Player::getScore() {
 //	return iScore;
 //}
@@ -1259,4 +1307,43 @@ Sprite* Player::getMarioSprite() {
 
 CIMG* Player::getMarioLVLUP() {
 	return tMarioLVLUP;
+}
+
+void Player::setRemote(bool v) { 
+	this->isRemote = v; 
+}
+
+void Player::UpdateRemote() {
+	const float lerp = 0.15f;
+	const float snapDist = 96.0f;
+
+	float dx = targetX - fXPos;
+	float dy = targetY - fYPos;
+
+	if (fabs(dx) > snapDist || fabs(dy) > snapDist) {
+		fXPos = targetX;
+		fYPos = targetY;
+	}
+	else {
+		fXPos += dx * lerp;
+		fYPos += dy * lerp;
+	}
+
+	if (iFrameID > 0)
+		--iFrameID;
+
+	if (inLevelDownAnimation && inLevelDownAnimationFrameID > 0)
+		--inLevelDownAnimationFrameID;
+}
+
+void Player::setTargetX(float x) {
+	this->targetX = x;
+}
+
+void Player::setTargetY(float y) {
+	this->targetY = y;
+}
+
+float Player::getWorldX() {
+	return fXPos - CCore::getMap()->getXPos();
 }

@@ -15,8 +15,8 @@
 class WaitingRoom : public Menu
 {
 private:
-	bool selectWorld, selectChat, typing, host;
-	int activeWorldID, activeSecondWorldID;
+	bool selectWorld, selectChat, typing, host, ready;
+	int activeWorldID, activeSecondWorldID, levelId;
 
 	std::string currentMessage = "";
 
@@ -27,13 +27,22 @@ private:
 	std::vector<std::string> chatMessages;
 	std::string idRoom;
 
+	std::thread chatThread;
 	std::mutex chatMutex;
-	std::atomic<bool> runChatThread;
+	std::atomic<bool> runChatThread{ false };
 
 	std::thread playerThread;
-	bool runPlayerThread = false;
+	std::atomic<bool> runPlayerThread{ false };
 	std::mutex playerMutex;
+
+	std::thread startGameThread;
+	std::atomic<bool> runStartGameThread{ false };
+	std::atomic<bool> isHostCached{ false };
+
+	std::atomic<bool> hostStarted{ false };
 public:
+	SDL_Renderer* rR;
+
 	WaitingRoom(void);
 	~WaitingRoom(void);
 
@@ -50,6 +59,12 @@ public:
 
 	void ChatFetchThread(std::string, std::string, std::vector<std::string>&);
 	void PlayerFetchThread(std::string);
+	void WaitForHostStartThread(std::string);
+
+	void ResetState();
+	std::string getIdRoom();
+
+	void CallEscapeRoom();
 };
 
 #endif
