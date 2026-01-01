@@ -85,7 +85,7 @@ namespace History
             Panel card = new Panel
             {
                 Width = panelHistory.ClientSize.Width - 40, // 🔥 QUAN TRỌNG
-                Height = 130,
+                Height = 180,
                 BackColor = Color.FromArgb(40, 40, 40),
                 Margin = new Padding(10),
                 Padding = new Padding(12)
