@@ -12,3 +12,17 @@ E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.exe.c
 E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Newtonsoft.Json.dll
 E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Newtonsoft.Json.xml
 E:\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.Up2Date
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Ranking.exe.config
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Ranking.exe
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Ranking.pdb
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Newtonsoft.Json.dll
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\bin\Debug\Newtonsoft.Json.xml
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.AssemblyReference.cache
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.Form1.resources
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.Properties.Resources.resources
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.GenerateResource.cache
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.CoreCompileInputs.cache
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.csproj.Up2Date
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.exe
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.pdb
+C:\Users\khoin\OneDrive\Documents\NT106\Code\uMario_Jakowski-master\uMario_Jakowski-master\Ranking\obj\Debug\Ranking.exe.config

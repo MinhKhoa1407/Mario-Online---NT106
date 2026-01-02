@@ -1,112 +1,118 @@
-﻿namespace Ranking
+﻿using System.Drawing;
+using System.Windows.Forms;
+
+namespace Ranking
 {
     partial class Form1
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        private Label lblTitle;
+        private Panel panelTop3;
+        private Panel card1;
+        private Panel card2;
+        private Panel card3;
+
+        public Label lblTop1;
+        public Label lblTop2;
+        public Label lblTop3;
+
+        private DataGridView dataGridView1;
+        private DataGridViewTextBoxColumn Username;
+        private DataGridViewTextBoxColumn Score;
+        private DataGridViewTextBoxColumn Rank;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
-            {
                 components.Dispose();
-            }
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.Username = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Score = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Rank = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.lblTitle = new Label();
+            this.panelTop3 = new Panel();
+            this.card1 = new Panel();
+            this.card2 = new Panel();
+            this.card3 = new Panel();
+
+            this.lblTop1 = new Label();
+            this.lblTop2 = new Label();
+            this.lblTop3 = new Label();
+
+            this.dataGridView1 = new DataGridView();
+            this.Username = new DataGridViewTextBoxColumn();
+            this.Score = new DataGridViewTextBoxColumn();
+            this.Rank = new DataGridViewTextBoxColumn();
+
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 72F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(231, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(604, 135);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "RANKING";
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Username,
-            this.Score,
-            this.Rank});
-            this.dataGridView1.Location = new System.Drawing.Point(12, 148);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.RowHeadersWidth = 51;
-            this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(1039, 664);
-            this.dataGridView1.TabIndex = 2;
-            // 
-            // Username
-            // 
+
+            // FORM
+            this.ClientSize = new Size(1060, 820);
+            this.BackColor = Color.FromArgb(18, 28, 45);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Mario Online - Ranking";
+
+            // TITLE
+            this.lblTitle.Dock = DockStyle.Top;
+            this.lblTitle.Height = 90;
+            this.lblTitle.Text = "🏆 MARIO ONLINE - RANKING";
+            this.lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            this.lblTitle.Font = new Font("Segoe UI Black", 32F);
+            this.lblTitle.ForeColor = Color.Gold;
+
+            // PANEL TOP 3
+            this.panelTop3.Location = new Point(20, 100);
+            this.panelTop3.Size = new Size(1020, 180);
+            this.panelTop3.BackColor = Color.Transparent;
+
+            this.panelTop3.Controls.Add(this.card1);
+            this.panelTop3.Controls.Add(this.card2);
+            this.panelTop3.Controls.Add(this.card3);
+
+            // DATAGRIDVIEW
+            this.dataGridView1.Location = new Point(20, 300);
+            this.dataGridView1.Size = new Size(1020, 500);
+            this.dataGridView1.BackgroundColor = Color.FromArgb(25, 38, 60);
+            this.dataGridView1.BorderStyle = BorderStyle.None;
+            this.dataGridView1.EnableHeadersVisualStyles = false;
+            this.dataGridView1.RowHeadersVisible = false;
+            this.dataGridView1.ReadOnly = true;
+            this.dataGridView1.AllowUserToAddRows = false;
+            this.dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            this.dataGridView1.ColumnHeadersHeight = 42;
+            this.dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(35, 52, 80);
+            this.dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            this.dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 13F);
+
+            this.dataGridView1.DefaultCellStyle.BackColor = Color.FromArgb(25, 38, 60);
+            this.dataGridView1.DefaultCellStyle.ForeColor = Color.White;
+            this.dataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 12F);
+
+            // COLUMNS
             this.Username.HeaderText = "Username";
-            this.Username.MinimumWidth = 6;
-            this.Username.Name = "Username";
-            this.Username.ReadOnly = true;
-            this.Username.Width = 300;
-            // 
-            // Score
-            // 
+            this.Username.Width = 450;
             this.Score.HeaderText = "Score";
-            this.Score.MinimumWidth = 6;
-            this.Score.Name = "Score";
-            this.Score.ReadOnly = true;
             this.Score.Width = 300;
-            // 
-            // Rank
-            // 
             this.Rank.HeaderText = "Rank";
-            this.Rank.MinimumWidth = 6;
-            this.Rank.Name = "Rank";
-            this.Rank.ReadOnly = true;
-            this.Rank.Width = 125;
-            // 
-            // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1061, 845);
+            this.Rank.Width = 120;
+
+            this.dataGridView1.Columns.AddRange(new DataGridViewColumn[]
+            {
+                this.Username, this.Score, this.Rank
+            });
+
+            this.Controls.Add(this.lblTitle);
+            this.Controls.Add(this.panelTop3);
             this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.label1);
-            this.Name = "Form1";
-            this.Text = "RANKING";
+
             this.Load += new System.EventHandler(this.Form1_Load);
+
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
-
         }
-
-        #endregion
-
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.DataGridView dataGridView1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Username;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Score;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Rank;
     }
 }
-

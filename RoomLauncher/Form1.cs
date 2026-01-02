@@ -38,18 +38,26 @@ namespace RoomLauncher
             if (mode == "create")
             {
                 this.Text = "TẠO PHÒNG MỚI";
-                btnJoin.Visible = false; // Ẩn nút Join
-                btnCreate.Visible = true; //Hiện nút Create
-                btnCreate.Left = (this.ClientSize.Width - btnCreate.Width) / 2;
+
+                btnJoin.Visible = false;
+                btnCreate.Visible = true;
+
+                // canh giữa theo PANEL, không phải FORM
+                btnCreate.Left = (panelMain.Width - btnCreate.Width) / 2;
+                btnCreate.Top = 135;
             }
             else if (mode == "join")
             {
                 this.Text = "VÀO PHÒNG";
-                btnCreate.Visible = false; // Ẩn nút Create
-                btnJoin.Visible = true;    // Hiện nút Join
-                btnJoin.Left = (this.ClientSize.Width - btnJoin.Width) / 2;
+
+                btnCreate.Visible = false;
+                btnJoin.Visible = true;
+
+                btnJoin.Left = (panelMain.Width - btnJoin.Width) / 2;
+                btnJoin.Top = 135;
             }
         }
+
         // Hàm chuẩn bị thông tin trước khi vào game
         private void PrepareToEnterGame(string roomId, string action)
         {
@@ -186,8 +194,8 @@ namespace RoomLauncher
                 //}
                 this.Close();
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 MessageBox.Show("Lỗi: " + ex.Message);
                 return;
             }
@@ -209,6 +217,11 @@ namespace RoomLauncher
             {
                 await client.DeleteAsync($"{apiBaseUrl}/{currentRoomId}?playerName={username}");
             }
+        }
+
+        private void panelMain_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
