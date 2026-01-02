@@ -1,9 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #ifndef MAINMENU_H
 #define MAINMENU_H
 
 #include "Menu.h"
+#include "APIManager.h"
 
 class MainMenu : public Menu
 {
@@ -12,6 +13,9 @@ private:
 	int activeWorldID, activeSecondWorldID;
 
 	SDL_Rect rSelectWorld;
+	APIManager api;
+	bool isRoomOwner;
+	std::string currentRoomID;
 public:
 	MainMenu(void);
 	~MainMenu(void);
