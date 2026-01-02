@@ -55,23 +55,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\DELL\\.nuget\\packages\\": {},
+    "C:\\Users\\khoin\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
+      "projectUniqueName": "C:\\Users\\khoin\\OneDrive\\Documents\\NT106\\Code\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
       "projectName": "RoomLauncher",
-      "projectPath": "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
-      "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "E:\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\obj\\",
+      "projectPath": "C:\\Users\\khoin\\OneDrive\\Documents\\NT106\\Code\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\RoomLauncher.csproj",
+      "packagesPath": "C:\\Users\\khoin\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\khoin\\OneDrive\\Documents\\NT106\\Code\\uMario_Jakowski-master\\uMario_Jakowski-master\\RoomLauncher\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\khoin\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -80,7 +80,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
